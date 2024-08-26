@@ -1,0 +1,57 @@
+﻿using DeYasnoTelegramBot.Application.BotCommands.Base;
+using DeYasnoTelegramBot.Application.Common.Dtos.YasnoWebScrapper;
+using DeYasnoTelegramBot.Infrastructure.Persistence;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using static System.Net.Mime.MediaTypeNames;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types;
+using Telegram.Bot;
+
+namespace DeYasnoTelegramBot.Application.BotCommands.GetOutageStatusCommand;
+
+public class GetOutageStatusCommand : BaseCommand, IRequest<string>
+{
+}
+
+public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusCommand>
+{
+    private readonly ApplicationDbContext _context;
+    private readonly ITelegramBotClient _botClient;
+
+    public GetOutageStatusCommandHandler(ApplicationDbContext context,
+        ITelegramBotClient botClient)
+    {
+        _context = context;
+        _botClient = botClient;
+    }
+
+    public async Task Handle(GetOutageStatusCommand request, CancellationToken cancellationToken)
+    {
+        var dateTimeNow = DateTime.UtcNow;
+        var schedule = await _context.Subscribers.Where(x => x.ChatId == request.ChatId)
+            .Select(o => new
+            {
+                currentOutageHour = o.OutageSchedules.Where(s => s.NumberWeekDay == (int)dateTimeNow.DayOfWeek)
+                        .SelectMany(d => d.OutageHours)
+                        .Where(dd => dd.Hour == dateTimeNow.Hour)
+                        .FirstOrDefault(),
+            })
+            .Select(r => r.currentOutageHour)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (schedule != null)
+        {
+            var statusText = schedule.Status switch
+            {
+                Domain.Enums.OutageStatus.PowerOn => "Зараз світло є.",
+                Domain.Enums.OutageStatus.PowerOff => "Зараз світло нема.",
+                Domain.Enums.OutageStatus.PowerPossibleOn => "Зараз сіра зона.",
+            };
+
+            var message = await _botClient.SendTextMessageAsync(request.ChatId, statusText,
+                parseMode: ParseMode.Html,
+                protectContent: false);
+        }
+    }
+}
