@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DeYasnoTelegramBot.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240820133925_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240827141711_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,7 @@ namespace DeYasnoTelegramBot.Infrastructure.Persistence.Migrations
                     b.Property<string>("UserCity")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserHouse")
+                    b.Property<string>("UserHouseNumber")
                         .HasColumnType("text");
 
                     b.Property<string>("UserRegion")

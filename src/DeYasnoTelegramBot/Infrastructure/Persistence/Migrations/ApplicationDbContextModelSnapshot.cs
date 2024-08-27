@@ -35,7 +35,7 @@ namespace DeYasnoTelegramBot.Infrastructure.Persistence.Migrations
                     b.Property<string>("UserCity")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserHouse")
+                    b.Property<string>("UserHouseNumber")
                         .HasColumnType("text");
 
                     b.Property<string>("UserRegion")

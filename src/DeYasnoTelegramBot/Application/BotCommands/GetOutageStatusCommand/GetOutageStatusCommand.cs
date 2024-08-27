@@ -7,6 +7,7 @@ using static System.Net.Mime.MediaTypeNames;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot;
+using DeYasnoTelegramBot.Application.Common.Helpers;
 
 namespace DeYasnoTelegramBot.Application.BotCommands.GetOutageStatusCommand;
 
@@ -44,9 +45,9 @@ public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusComm
         {
             var statusText = schedule.Status switch
             {
-                Domain.Enums.OutageStatus.PowerOn => "Зараз світло є.",
-                Domain.Enums.OutageStatus.PowerOff => "Зараз світло нема.",
-                Domain.Enums.OutageStatus.PowerPossibleOn => "Зараз сіра зона.",
+                Domain.Enums.OutageStatus.PowerOn => NotificationMessages.CommandMessages.GetOutageStatusCommand.PowerOn,
+                Domain.Enums.OutageStatus.PowerOff => NotificationMessages.CommandMessages.GetOutageStatusCommand.PowerOff,
+                Domain.Enums.OutageStatus.PowerPossibleOn => NotificationMessages.CommandMessages.GetOutageStatusCommand.PowerPossibleOn,
             };
 
             var message = await _botClient.SendTextMessageAsync(request.ChatId, statusText,

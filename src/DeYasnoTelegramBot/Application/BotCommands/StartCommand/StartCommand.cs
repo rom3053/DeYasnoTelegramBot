@@ -1,4 +1,5 @@
 ﻿using DeYasnoTelegramBot.Application.BotCommands.Base;
+using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Domain.Enums;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
 using MediatR;
@@ -41,19 +42,34 @@ public class StartCommandHandler : IRequestHandler<StartCommand>
                 BrowserSessionId = default,
                 UserStreet = default,
                 UserCity = default,
-                UserHouse = default,
+                UserHouseNumber = default,
                 UserRegion = default,
             });
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            var sub = await _context.Subscribers.FirstOrDefaultAsync(x => x.ChatId == chatId);
+
+            sub.ChatId = chatId;
+            sub.InputStep = OutageInputStep.Step_1;
+            sub.BrowserSessionId = default;
+            sub.UserStreet = default;
+            sub.UserCity = default;
+            sub.UserHouseNumber = default;
+            sub.UserRegion = default;
+
+            _context.Subscribers.Update(sub);
             await _context.SaveChangesAsync();
         }
 
         var inlineMarkup = new InlineKeyboardMarkup(new InlineKeyboardButton[]
         {
-            InlineKeyboardButton.WithCallbackData("Київ", Common.Constants.BotCommands.CallbackCommands.SelectedKiev),
-            InlineKeyboardButton.WithCallbackData("Дніпро", Common.Constants.BotCommands.CallbackCommands.SelectedDnipro),
+            InlineKeyboardButton.WithCallbackData(NotificationMessages.CommandMessages.StartCommand.Kiev, Common.Constants.BotCommands.CallbackCommands.SelectedKiev),
+            InlineKeyboardButton.WithCallbackData(NotificationMessages.CommandMessages.StartCommand.Dnipro, Common.Constants.BotCommands.CallbackCommands.SelectedDnipro),
         });
 
-        var message = await _botClient.SendTextMessageAsync(chatId, "Оберіть Ваш регіон.",
+        var message = await _botClient.SendTextMessageAsync(chatId, NotificationMessages.CommandMessages.StartCommand.CommandText,
             parseMode: ParseMode.Html,
             protectContent: true,
             replyMarkup: inlineMarkup);

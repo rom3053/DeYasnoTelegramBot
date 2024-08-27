@@ -48,8 +48,6 @@ public class UpdateHandler : IUpdateHandler
                 return;
 
             //ToDo validate user step of input info and selectors
-            //ToDo add background service for notifications
-            //ToDo add integrations with scrapperAPI
             if (userMessageText is not null)
             {
                 string handledText = userMessageText

@@ -2,6 +2,9 @@
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using DeYasnoTelegramBot.Application.Common.Extensions;
+using System.Collections.Concurrent;
+using DeYasnoTelegramBot.Application.Common.Helpers;
+using Microsoft.FeatureManagement;
 
 namespace DeYasnoTelegramBot.Background;
 
@@ -16,6 +19,14 @@ public class OutageNotificationJob : BackgroundService
     private static HashSet<long> _outageNotifed = [];
     private static HashSet<long> _greyZoneNotifed = [];
     private static HashSet<long> _powerOnNotifed = [];
+
+    private static HashSet<long> _outageNotifed15min = [];
+    private static HashSet<long> _greyZoneNotifed15min = [];
+    private static HashSet<long> _powerOnNotifed15min = [];
+
+    private static HashSet<long> _outageNotifed30min = [];
+    private static HashSet<long> _greyZoneNotifed30min = [];
+    private static HashSet<long> _powerOnNotifed30min = [];
 
     const int ZERO_HOUR = 0;
     const int TWENTY_TRHEE_HOUR = 23;
@@ -43,7 +54,15 @@ public class OutageNotificationJob : BackgroundService
                 //TODO add toogle feacture for deactivated notifications
                 await using var scope = _serviceProvider.CreateAsyncScope();
                 var cachedScheduleStorage = scope.ServiceProvider.GetRequiredService<OutageScheduleStorage>();
+                var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
                 var sessions = cachedScheduleStorage.NotificationList;
+
+                
+                if (!await manager.IsEnabledAsync("OutageNotification"))
+                {
+                    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationJob));
+                    return;
+                }
 
                 var ukraineDateTimeNow = DateTime.UtcNow;
                 var dateTimeToNotificationNow = DateTime.UtcNow + TimeSpan.FromMinutes(5);
@@ -74,6 +93,7 @@ public class OutageNotificationJob : BackgroundService
                 NotifyOutage(sessions, ukraineNotificationTime, notificationHour, prevNotificationHour, ukraineDateTimeNow);
                 NotifyGreyZone(sessions, ukraineNotificationTime, ukraineDateTimeNow, notificationHour, prevNotificationHour);
                 NotifyPowerOn(sessions, ukraineNotificationTime, ukraineDateTimeNow, notificationHour, prevNotificationHour);
+
             }
             catch (Exception ex)
             {
@@ -81,7 +101,7 @@ public class OutageNotificationJob : BackgroundService
             }
         }
 
-        void NotifyOutage(System.Collections.Concurrent.ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, int notificationHour, int prevHour, DateTime realTime)
+        void NotifyOutage(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, int notificationHour, int prevHour, DateTime realTime)
         {
             var needNotify = sessions.Select(x => x.Value)
                 .Select(a => new
@@ -107,7 +127,7 @@ public class OutageNotificationJob : BackgroundService
             {
                 foreach (var chatId in needNotify)
                 {
-                    SendMessage(chatId, "Закругляйся дурачок, світло вимкнуть через 5 хвилин.");
+                    SendMessage(chatId, NotificationMessages.Message_About_5min_PowerOff);
                 }
                 //add new notifed
                 _outageNotifed.UnionWith(needNotify);
@@ -116,7 +136,7 @@ public class OutageNotificationJob : BackgroundService
             }
         }
 
-        void NotifyGreyZone(System.Collections.Concurrent.ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour)
+        void NotifyGreyZone(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour)
         {
             var needNotify = sessions.Select(x => x.Value)
                 .Select(a => new
@@ -145,7 +165,7 @@ public class OutageNotificationJob : BackgroundService
                 foreach (var chatId in needNotify)
                 {
                     //ToDO move to some class
-                    SendMessage(chatId, "Сіра зона починається за 5 хвилин.");
+                    SendMessage(chatId, NotificationMessages.Message_About_5min_PossiblePowerOn);
                 }
                 //add new notifed
                 _greyZoneNotifed.UnionWith(needNotify);
@@ -154,7 +174,7 @@ public class OutageNotificationJob : BackgroundService
             }
         }
 
-        void NotifyPowerOn(System.Collections.Concurrent.ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour)
+        void NotifyPowerOn(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour)
         {
             var needNotify = sessions.Select(x => x.Value)
                 .Select(a => new
@@ -180,12 +200,56 @@ public class OutageNotificationJob : BackgroundService
             {
                 foreach (var chatId in needNotify)
                 {
-                    SendMessage(chatId, "Світло буде приблизно через 5 хвилин.");
+                    SendMessage(chatId, NotificationMessages.Message_About_5min_PowerOn);
                 }
                 //add new notifed
                 _powerOnNotifed.UnionWith(needNotify);
                 //clean
                 _outageNotifed.ExceptWith(needNotify);
+            }
+        }
+
+        //ToDo variant with 5 15 30 
+        void NotifyAllPowerOnV2(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour)
+        {
+            NotifyPowerOnV2(sessions, notificationTime + TimeSpan.FromMinutes(5), realTime, notificationHour, prevHour, _powerOnNotifed, _outageNotifed);
+            NotifyPowerOnV2(sessions, notificationTime + TimeSpan.FromMinutes(15), realTime, notificationHour, prevHour, _powerOnNotifed15min, _outageNotifed15min);
+            NotifyPowerOnV2(sessions, notificationTime + TimeSpan.FromMinutes(30), realTime, notificationHour, prevHour, _powerOnNotifed30min, _outageNotifed30min);
+        }
+
+        //split to different backgound jobs with defferent inverval 15 every 5min 10 min av
+        void NotifyPowerOnV2(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOnNotificationFlags, HashSet<long> nextNotificationFlags)
+        {
+            var needNotify = sessions.Select(x => x.Value)
+                .Select(a => new
+                {
+                    a.ChatIds,
+                    a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek))
+                                                          .FirstOrDefault()?.OutageHours,
+                    PreviousDayOutageHour_23 = a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
+                                                          .FirstOrDefault()?.OutageHours.Where(x => x.Hour == TWENTY_TRHEE_HOUR).FirstOrDefault()
+                })
+                //validate previous day and hour_23
+                .WhereIf(notificationHour == ZERO_HOUR, x => x.OutageHours.Any(oh => realTime.Hour > notificationHour && oh.Hour == notificationHour && oh.Status == Domain.Enums.OutageStatus.PowerOn)
+                            && x.PreviousDayOutageHour_23.Hour == prevHour && (x.PreviousDayOutageHour_23.Status == Domain.Enums.OutageStatus.PowerOff || x.PreviousDayOutageHour_23.Status == Domain.Enums.OutageStatus.PowerPossibleOn))
+                .WhereIf(notificationHour != ZERO_HOUR, x => x.OutageHours.Any(oh => realTime.Hour > notificationHour && oh.Hour == notificationHour && oh.Status == Domain.Enums.OutageStatus.PowerOn)
+                            && x.OutageHours.Any(sh => sh.Hour == prevHour && (sh.Status == Domain.Enums.OutageStatus.PowerPossibleOn || sh.Status == Domain.Enums.OutageStatus.PowerOff)))
+                .Select(r => new { r.ChatIds })
+                .SelectMany(rr => rr.ChatIds)
+                .ToHashSet();
+
+            //remove already notified
+            needNotify.ExceptWith(powerOnNotificationFlags);
+            if (needNotify.Count != 0)
+            {
+                foreach (var chatId in needNotify)
+                {
+                    SendMessage(chatId, "Світло буде приблизно через 5 хвилин.");
+                }
+                //add new notifed
+                powerOnNotificationFlags.UnionWith(needNotify);
+                //clean
+                nextNotificationFlags.ExceptWith(needNotify);
             }
         }
     }

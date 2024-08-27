@@ -5,7 +5,7 @@
 namespace DeYasnoTelegramBot.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,7 @@ namespace DeYasnoTelegramBot.Infrastructure.Persistence.Migrations
                     UserRegion = table.Column<string>(type: "text", nullable: true),
                     UserCity = table.Column<string>(type: "text", nullable: true),
                     UserStreet = table.Column<string>(type: "text", nullable: true),
-                    UserHouse = table.Column<string>(type: "text", nullable: true),
+                    UserHouseNumber = table.Column<string>(type: "text", nullable: true),
                     OutageSchedules = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>

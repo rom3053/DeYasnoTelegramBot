@@ -2,6 +2,7 @@ using DeYasnoTelegramBot.Application;
 using DeYasnoTelegramBot.Background;
 using DeYasnoTelegramBot.Infrastructure;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
+using Microsoft.FeatureManagement;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -14,6 +15,9 @@ ConfigurationManager configuration = builder.Configuration;
 
 TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
 
+
+builder.Services
+    .AddFeatureManagement(configuration.GetSection("FeatureFlags"));
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(configuration, bot);
 

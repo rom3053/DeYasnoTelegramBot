@@ -20,7 +20,7 @@ public class OutageScheduleStorage
     public static async Task InitCache(ApplicationDbContext context, OutageScheduleStorage outageScheduleStorage)
     {
         var subs = await context.Subscribers.Where(x => !string.IsNullOrEmpty(x.UserRegion) && !string.IsNullOrEmpty(x.UserCity)
-                     && !string.IsNullOrEmpty(x.UserStreet) && !string.IsNullOrEmpty(x.UserHouse)
+                     && !string.IsNullOrEmpty(x.UserStreet) && !string.IsNullOrEmpty(x.UserHouseNumber)
                      && x.OutageSchedules != null)
                  .ToListAsync();
 

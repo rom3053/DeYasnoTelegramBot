@@ -58,7 +58,7 @@ public class UserInputCommandHandler : IRequestHandler<UserInputCommand>
                 sub.UserRegion = string.IsNullOrEmpty(result.UserRegion) ? sub.UserRegion : result.UserRegion;
                 sub.UserCity = string.IsNullOrEmpty(result.UserCity) ? sub.UserCity : result.UserCity;
                 sub.UserStreet = string.IsNullOrEmpty(result.UserStreet) ? sub.UserStreet : result.UserStreet;
-                sub.UserHouse = string.IsNullOrEmpty(result.UserHouse) ? sub.UserHouse : result.UserHouse;
+                sub.UserHouseNumber = string.IsNullOrEmpty(result.UserHouse) ? sub.UserHouseNumber : result.UserHouse;
                 sub.BrowserSessionId = string.IsNullOrEmpty(result.BrowserSessionId) ? sub.BrowserSessionId : result.BrowserSessionId;
 
                 if (result.InputStep == OutageInputStep.Step_0)
@@ -72,4 +72,3 @@ public class UserInputCommandHandler : IRequestHandler<UserInputCommand>
         }
     }
 }
-
