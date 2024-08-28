@@ -34,7 +34,7 @@ public static class ConfigureServices
         services.AddSingleton<ITelegramBotClient>(botClient);
         services.AddScoped<IUpdateHandler, UpdateHandler>();
         services.AddScoped<OutageInputService>();
-
+        services.AddScoped<OutageNotificationService>();
         services.AddScoped<ApplicationDbContextInitialiser>();
         //HttpClients
         services.AddHttpClient<YasnoWebScrapperHttpClient>(options => 

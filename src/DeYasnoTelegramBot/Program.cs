@@ -21,7 +21,7 @@ builder.Services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(configuration, bot);
 
-builder.Services.AddHostedService<OutageNotificationJob>();
+builder.Services.AddHostedService<OutageNotificationAt5minJob>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
