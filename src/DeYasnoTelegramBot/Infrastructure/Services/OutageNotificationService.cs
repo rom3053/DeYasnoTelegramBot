@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq;
 using DeYasnoTelegramBot.Application.Common.Extensions;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using Telegram.Bot;
@@ -28,7 +29,7 @@ public class OutageNotificationService
     public void NotifyIn5min(HashSet<long> outageNotifed, HashSet<long> greyZoneNotifed, HashSet<long> powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
-        GetUkraineNotificationTimes(TimeSpan.FromMinutes(5), out var notificationTime, out var dateTimeNow, out  var notificationHour, out var prevNotificationHour);
+        GetUkraineNotificationTimes(TimeSpan.FromMinutes(5), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
         NotifyPowerOffV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, outageNotifed, greyZoneNotifed, NotificationMessages.Message_About_5min_PowerOff);
         NotifyPossiblePowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, greyZoneNotifed, powerOnNotifed, NotificationMessages.Message_About_5min_PossiblePowerOn);
@@ -90,8 +91,9 @@ public class OutageNotificationService
                 a.ChatIds,
                 a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek))
                                                       .FirstOrDefault()?.OutageHours,
-                PreviousDayOutageHour_23 = a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
-                                                      .FirstOrDefault()?.OutageHours.Where(x => x.Hour == TWENTY_TRHEE_HOUR).FirstOrDefault()
+                PreviousDayOutageHour_23 = a.OutageSchedules?.WhereIf(notificationTime.DayOfWeek == DayOfWeek.Sunday, o => o.NumberWeekDay == (int)DayOfWeek.Saturday)
+                                                        .WhereIf(notificationTime.DayOfWeek != DayOfWeek.Sunday, o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
+                                                        .FirstOrDefault()?.OutageHours.Where(x => x.Hour == TWENTY_TRHEE_HOUR).FirstOrDefault()
             })
                 //validate previous day and hour_23
                 .WhereIf(notificationHour == ZERO_HOUR, x => x.OutageHours.Any(oh => realTime.Hour > notificationHour && oh.Hour == notificationHour && oh.Status == Domain.Enums.OutageStatus.PowerOff)
@@ -125,7 +127,8 @@ public class OutageNotificationService
                 a.ChatIds,
                 a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek))
                                                       .FirstOrDefault()?.OutageHours,
-                PreviousDayOutageHour_23 = a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
+                PreviousDayOutageHour_23 = a.OutageSchedules?.WhereIf(notificationTime.DayOfWeek == DayOfWeek.Sunday, o => o.NumberWeekDay == (int)DayOfWeek.Saturday)
+                                                      .WhereIf(notificationTime.DayOfWeek != DayOfWeek.Sunday, o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
                                                       .FirstOrDefault()?.OutageHours.Where(x => x.Hour == TWENTY_TRHEE_HOUR).FirstOrDefault()
             })
                 //validate previous day and hour_23
@@ -160,7 +163,8 @@ public class OutageNotificationService
                 a.ChatIds,
                 a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek))
                                                       .FirstOrDefault()?.OutageHours,
-                PreviousDayOutageHour_23 = a.OutageSchedules?.Where(o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
+                PreviousDayOutageHour_23 = a.OutageSchedules?.WhereIf(notificationTime.DayOfWeek == DayOfWeek.Sunday, o => o.NumberWeekDay == (int)DayOfWeek.Saturday)
+                                                      .WhereIf(notificationTime.DayOfWeek != DayOfWeek.Sunday, o => o.NumberWeekDay == ((int)notificationTime.DayOfWeek - 1))
                                                       .FirstOrDefault()?.OutageHours.Where(x => x.Hour == TWENTY_TRHEE_HOUR).FirstOrDefault()
             })
             //validate previous day and hour_23
