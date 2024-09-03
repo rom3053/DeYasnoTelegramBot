@@ -4,21 +4,15 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["./DeYasnoTelegramBot/DeYasnoTelegramBot.csproj", "DeYasnoTelegramBot/"]
+COPY *.csproj .
 
-RUN dotnet restore "DeYasnoTelegramBot/DeYasnoTelegramBot.csproj"
-COPY . .
-WORKDIR "/src/src/DeYasnoTelegramBot"
-RUN dotnet build "DeYasnoTelegramBot.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet restore
+COPY . ./
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "DeYasnoTelegramBot.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish --no-restore -c Release -o out
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish /app/out .
 ENTRYPOINT ["dotnet", "DeYasnoTelegramBot.dll"]
