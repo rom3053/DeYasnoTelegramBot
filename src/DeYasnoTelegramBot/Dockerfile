@@ -6,7 +6,7 @@ EXPOSE 8081
 
 COPY *.csproj .
 
-RUN dotnet restore
+RUN dotnet restore "DeYasnoTelegramBot.csproj" 
 
 COPY . ./
 
