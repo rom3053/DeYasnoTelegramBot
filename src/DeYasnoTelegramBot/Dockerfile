@@ -4,10 +4,10 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8081
 
-WORKDIR /src
 COPY *.csproj .
 
 RUN dotnet restore
+
 COPY . ./
 
 RUN dotnet publish --no-restore -c Release -o out
