@@ -1,7 +1,9 @@
 name: Deploy to VPS
 
 on:
-  pull_request:
+ push:
+    branches: [ master ]
+ pull_request:
     branches: [ master ]
 
 jobs:
@@ -39,7 +41,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest .
+        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest -f ./Dockerfile .
 
     - name: Push Docker image to Docker Hub
       run: |
