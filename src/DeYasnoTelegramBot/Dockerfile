@@ -6,7 +6,7 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["./DeYasnoTelegramBot/DeYasnoTelegramBot.csproj", "DeYasnoTelegramBot/"]
+COPY ["./src/DeYasnoTelegramBot/DeYasnoTelegramBot.csproj", "DeYasnoTelegramBot/"]
 RUN dotnet restore "./src/DeYasnoTelegramBot/DeYasnoTelegramBot.csproj"
 COPY . .
 WORKDIR "/src/src/DeYasnoTelegramBot"
