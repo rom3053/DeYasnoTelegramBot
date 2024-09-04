@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DOCKERHUB_USERNAME: rom3053
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       APP_NAME: deyasno
       CONTAINER_NAME: deyasno
 
