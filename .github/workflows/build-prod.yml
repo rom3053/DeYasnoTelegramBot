@@ -17,7 +17,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.REP_TOKEN }}
 
     - name: Set up .NET Core
       uses: actions/setup-dotnet@v4
@@ -38,16 +38,15 @@ jobs:
       run: |
         docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
 
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.VPS_PORT }}
-        script: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
-          docker stop ${{ env.CONTAINER_NAME }} || true
-          docker rm ${{ env.CONTAINER_NAME }} || true
-          docker run -d --name ${{ env.CONTAINER_NAME }} -p 80:80 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+    # - name: Deploy to VPS
+    #   uses: appleboy/ssh-action@v1.0.3
+    #   with:
+    #     host: ${{ secrets.VPS_HOST }}
+    #     username: ${{ secrets.VPS_USERNAME }}
+    #     password: ${{ secrets.VPS_PASSWORD }}
+    #     script: |
+    #       docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+    #       docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+    #       docker stop ${{ env.CONTAINER_NAME }} || true
+    #       docker rm ${{ env.CONTAINER_NAME }} || true
+    #       docker run -d --name ${{ env.CONTAINER_NAME }} -p 81:81 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
