@@ -41,7 +41,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build ./src/DeYasnoTelegramBot -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+        docker build -f src/WebAPI/Dockerfile -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
 
     - name: Push Docker image to Docker Hub
       run: |
