@@ -41,13 +41,12 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -f src/DeYasnoTelegramBot/Dockerfile -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+        docker build -t ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest -f src/DeYasnoTelegramBot/Dockerfile
 
     - name: Push Docker image to Docker Hub
       run: |
         docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
 
-    #
     # - name: Deploy to VPS
     #   uses: appleboy/ssh-action@v1.0.3
     #   with:
