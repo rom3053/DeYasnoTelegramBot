@@ -6,14 +6,14 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["src/DeYasnoTelegramBot/DeYasnoTelegramBot.csproj", "DeYasnoTelegramBot/"]
-RUN dotnet restore "./src/DeYasnoTelegramBot/DeYasnoTelegramBot.csproj"
+COPY ["src\DeYasnoTelegramBot\DeYasnoTelegramBot.csproj", "DeYasnoTelegramBot\"]
+RUN dotnet restore ".\src\DeYasnoTelegramBot/DeYasnoTelegramBot.csproj"
 COPY . .
-WORKDIR "/src/src/DeYasnoTelegramBot"
-RUN dotnet build "./DeYasnoTelegramBot.csproj" -c Release -o /app/build
+WORKDIR "\src\src\DeYasnoTelegramBot"
+RUN dotnet build ".\DeYasnoTelegramBot.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "./DeYasnoTelegramBot.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish ".\DeYasnoTelegramBot.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
