@@ -47,6 +47,7 @@ jobs:
       run: |
         docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
 
+    #
     # - name: Deploy to VPS
     #   uses: appleboy/ssh-action@v1.0.3
     #   with:
