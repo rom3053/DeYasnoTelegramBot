@@ -1,18 +1,22 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
 WORKDIR /app
 EXPOSE 8081
 
-COPY *.csproj .
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["src/DeYasnoTelegramBot/DeYasnoTelegramBot.csproj", "src/DeYasnoTelegramBot/"]
+RUN dotnet restore "./src/DeYasnoTelegramBot/DeYasnoTelegramBot.csproj"
+COPY . .
+WORKDIR "/src/src/DeYasnoTelegramBot"
+RUN dotnet build "./DeYasnoTelegramBot.csproj" -c Release -o /app/build
 
-RUN dotnet restore "./DeYasnoTelegramBot.csproj"
+FROM build AS publish
+RUN dotnet publish "./DeYasnoTelegramBot.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-COPY . ./
-FROM base AS publish
-RUN dotnet publish --no-restore -c Release -o out
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM base AS final
 WORKDIR /app
-COPY --from=base /app/out .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "DeYasnoTelegramBot.dll"]
