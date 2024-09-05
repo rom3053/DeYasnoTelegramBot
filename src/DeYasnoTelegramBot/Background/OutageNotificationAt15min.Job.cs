@@ -6,9 +6,9 @@ using Telegram.Bot;
 
 namespace DeYasnoTelegramBot.Background;
 
-public class OutageNotificationAt15min : BackgroundService
+public class OutageNotificationAt15minJob : BackgroundService
 {
-    private readonly ILogger<OutageNotificationAt5minJob> _logger;
+    private readonly ILogger<OutageNotificationAt15minJob> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly PeriodicTimer _periodicTimer;
 
@@ -16,9 +16,9 @@ public class OutageNotificationAt15min : BackgroundService
     private static HashSet<long> _greyZoneNotifed15min = [];
     private static HashSet<long> _powerOnNotifed15min = [];
 
-    public OutageNotificationAt15min(
+    public OutageNotificationAt15minJob(
         IServiceProvider serviceProvider,
-        ILogger<OutageNotificationAt5minJob> logger)
+        ILogger<OutageNotificationAt15minJob> logger)
     {
         _periodicTimer = new(TimeSpan.FromMinutes(5));
         _serviceProvider = serviceProvider;
@@ -32,7 +32,7 @@ public class OutageNotificationAt15min : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt15min));
+                _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt15minJob));
                 //TODO add toogle feacture for deactivated notifications
                 await using var scope = _serviceProvider.CreateAsyncScope();
                 var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
@@ -40,7 +40,7 @@ public class OutageNotificationAt15min : BackgroundService
 
                 if (!await manager.IsEnabledAsync("OutageNotification"))
                 {
-                    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt15min));
+                    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt15minJob));
                     return;
                 }
 

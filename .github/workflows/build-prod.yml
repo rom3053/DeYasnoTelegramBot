@@ -35,15 +35,15 @@ jobs:
       run: |
         docker push ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
 
-    # - name: Deploy to VPS
-    #   uses: appleboy/ssh-action@v1.0.3
-    #   with:
-    #     host: ${{ secrets.VPS_HOST }}
-    #     username: ${{ secrets.VPS_USERNAME }}
-    #     password: ${{ secrets.VPS_PASSWORD }}
-    #     script: |
-    #       docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-    #       docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
-    #       docker stop ${{ env.CONTAINER_NAME }} || true
-    #       docker rm ${{ env.CONTAINER_NAME }} || true
-    #       docker run -d --name ${{ env.CONTAINER_NAME }} -p 81:81 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+          docker stop ${{ env.CONTAINER_NAME }} || true
+          docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run -d --name ${{ env.CONTAINER_NAME }} -p 81:81 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
