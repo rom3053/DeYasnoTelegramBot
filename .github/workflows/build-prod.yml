@@ -46,4 +46,4 @@ jobs:
           docker pull ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
           docker stop ${{ env.CONTAINER_NAME }} || true
           docker rm ${{ env.CONTAINER_NAME }} || true
-          docker run -d --name ${{ env.CONTAINER_NAME }} -p 8081:8081 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+          docker run -d --name ${{ env.CONTAINER_NAME }} --user root -v /var/run/docker.sock:/var/run/docker.sock -p 8081:8081 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
