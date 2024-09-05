@@ -40,7 +40,7 @@ public class VersionController : ControllerBase
     <body>
         <div class='videoContainer'>
             <iframe width='560' height='315' 
-                src='https://www.youtube.com/embed/XGxIE1hr0w4?autoplay=1&start=17' 
+                src='https://www.youtube.com/embed/XGxIE1hr0w4?autoplay=1&start=17&enable_js=1' 
                 frameborder='0' 
                 allow='autoplay; encrypted-media' 
                 allowfullscreen>
