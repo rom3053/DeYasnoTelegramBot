@@ -99,26 +99,17 @@ public class OutageInputService
 
         var response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(browserSessionId, (index - 1).ToString());
 
-        //finnal step
+        //finnal step send notification and skip incrementing
         if (inputStep == OutageInputStep.Step_7)
         {
-            var scheduleTableDto = await GetParsedTable(browserSessionId);
             await SendMessage(chatId, Message_About_Step_0);
-
-            return new SubscriberInputUpdateDto
-            {
-                OutageSchedules = scheduleTableDto,
-                InputStep = OutageInputStep.Step_0,
-            };
         }
         else
         {
             inputStep++;
         }
 
-        var nextStep = inputStep;
-
-        var stepTask = nextStep switch
+        var stepTask = inputStep switch
         {
             OutageInputStep.Step_0 => Task.CompletedTask,
             OutageInputStep.Step_4 => SendMessage(chatId, Message_About_Step_4),
@@ -130,11 +121,12 @@ public class OutageInputService
 
         return new SubscriberInputUpdateDto
         {
+            OutageSchedules = inputStep == OutageInputStep.Step_7 ? await GetParsedTable(browserSessionId) : default,
             UserRegion = response.SelectedOutageInputType == SelectedOutageInputType.SelectedRegion ? response.Text : default,
             UserCity = response.SelectedOutageInputType == SelectedOutageInputType.SelectedCity ? response.Text : default,
             UserStreet = response.SelectedOutageInputType == SelectedOutageInputType.SelectedStreet ? response.Text : default,
             UserHouse = response.SelectedOutageInputType == SelectedOutageInputType.SelectedHouseNumber ? response.Text : default,
-            InputStep = nextStep,
+            InputStep = inputStep == OutageInputStep.Step_7 ? OutageInputStep.Step_0 : inputStep,
         };
     }
 

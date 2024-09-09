@@ -1,10 +1,10 @@
-﻿using DeYasnoTelegramBot.Background;
-using DeYasnoTelegramBot.Infrastructure.Configurations;
+﻿using DeYasnoTelegramBot.Infrastructure.Configurations;
 using DeYasnoTelegramBot.Infrastructure.HttpClients;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
 using DeYasnoTelegramBot.Infrastructure.Services;
 using DeYasnoTelegramBot.Infrastructure.Telegram.Handlers;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 
@@ -24,8 +24,12 @@ public static class ConfigureServices
         }
         else
         {
+            var dataSource = new NpgsqlDataSourceBuilder(config.ConnectionStrings.DefaultConnection)
+               .EnableDynamicJson()
+               .Build();
+
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(config.ConnectionStrings.DefaultConnection,
+                options.UseNpgsql(dataSource,
                     builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
         }
 

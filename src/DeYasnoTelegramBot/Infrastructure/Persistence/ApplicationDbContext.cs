@@ -1,4 +1,5 @@
-﻿using System.Reflection.Emit;
+﻿using System;
+using System.Reflection.Emit;
 using DeYasnoTelegramBot.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +11,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder
-        .Entity<Subscriber>()
-        .OwnsOne(product => product.OutageSchedules, builder => { builder.ToJson(); });
+        builder.Entity<Subscriber>()
+            .Property(p => p.OutageSchedules)
+            .HasColumnType("jsonb");
 
         base.OnModelCreating(builder);
 
