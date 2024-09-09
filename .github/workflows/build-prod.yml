@@ -30,7 +30,7 @@ jobs:
       run: |
         jq '.DeYasno.ConnectionStrings.DefaultConnection = "${{ env.CONNECTIONSTRING }}"' ./src/DeYasnoTelegramBot/appsettings.json > temp.json
         jq '.DeYasno.YasnoWebScrapperClient.ApiKey = "${{ env.API_KEY }}"' ./src/DeYasnoTelegramBot/appsettings.json > temp.json
-        mv temp.json appsettings.json
+        mv temp.json ./src/DeYasnoTelegramBot/appsettings.json
 
     - name: Verify changes
       run: cat appsettings.json
