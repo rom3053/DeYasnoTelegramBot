@@ -15,7 +15,6 @@ ConfigurationManager configuration = builder.Configuration;
 
 TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
 
-
 builder.Services
     .AddFeatureManagement(configuration.GetSection("FeatureFlags"));
 builder.Services.AddApplicationServices();

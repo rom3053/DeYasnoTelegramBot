@@ -24,7 +24,7 @@ public class ApplicationDbContextInitialiser
         {
             if (_context.Database.IsNpgsql())
             {
-                await _context.Database.EnsureDeletedAsync();
+                //await _context.Database.EnsureDeletedAsync();
                 await _context.Database.MigrateAsync();
                 await OutageScheduleStorage.InitCache(_context, _outageScheduleStorage);
             }
