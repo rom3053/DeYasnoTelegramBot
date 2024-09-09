@@ -16,7 +16,7 @@ ConfigurationManager configuration = builder.Configuration;
 TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
 
 builder.Services
-    .AddFeatureManagement(configuration.GetSection("FeatureFlags"));
+    .AddFeatureManagement(configuration.GetSection("DeYasno:FeatureFlags"));
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(configuration, bot);
 
