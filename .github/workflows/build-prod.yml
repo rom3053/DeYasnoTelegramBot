@@ -60,3 +60,4 @@ jobs:
           docker stop ${{ env.CONTAINER_NAME }} || true
           docker rm ${{ env.CONTAINER_NAME }} || true
           docker run -d --name ${{ env.CONTAINER_NAME }} --user root -p 8080:8080 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+
