@@ -21,6 +21,8 @@ ConfigurationManager configuration = builder.Configuration;
 //builder.Services.AddApplicationServices();
 //builder.Services.AddInfrastructureServices(configuration, bot);
 
+builder.Services.AddInfrastructureServices(configuration, null);
+
 //builder.Services.AddHostedService<OutageNotificationAt5minJob>();
 //builder.Services.AddHostedService<OutageNotificationAt15minJob>();
 //builder.Services.AddHostedService<OutageNotificationAt30minJob>();

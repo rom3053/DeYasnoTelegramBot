@@ -17,30 +17,30 @@ public static class ConfigureServices
         var config = GetConfig(configuration);
         services.AddSingleton(typeof(DeYasnoConfig), config);
 
-        if (config.UseInMemoryDatabase)
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("DeYasnoDb"));
-        }
-        else
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(config.ConnectionStrings.DefaultConnection,
-                    builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
-        }
+        //if (config.UseInMemoryDatabase)
+        //{
+        //    services.AddDbContext<ApplicationDbContext>(options =>
+        //        options.UseInMemoryDatabase("DeYasnoDb"));
+        //}
+        //else
+        //{
+        //    services.AddDbContext<ApplicationDbContext>(options =>
+        //        options.UseNpgsql(config.ConnectionStrings.DefaultConnection,
+        //            builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        //}
 
-        //Services
-        services.AddSingleton<OutageScheduleStorage>();
-        services.AddSingleton<ITelegramBotClient>(botClient);
-        services.AddScoped<IUpdateHandler, UpdateHandler>();
-        services.AddScoped<OutageInputService>();
-        services.AddScoped<OutageNotificationService>();
-        services.AddScoped<ApplicationDbContextInitialiser>();
-        //HttpClients
-        services.AddHttpClient<YasnoWebScrapperHttpClient>(options => 
-        {
-            options.BaseAddress = new Uri(config.YasnoWebScrapperClient.ServiceUrl);
-        });
+        ////Services
+        //services.AddSingleton<OutageScheduleStorage>();
+        //services.AddSingleton<ITelegramBotClient>(botClient);
+        //services.AddScoped<IUpdateHandler, UpdateHandler>();
+        //services.AddScoped<OutageInputService>();
+        //services.AddScoped<OutageNotificationService>();
+        //services.AddScoped<ApplicationDbContextInitialiser>();
+        ////HttpClients
+        //services.AddHttpClient<YasnoWebScrapperHttpClient>(options => 
+        //{
+        //    options.BaseAddress = new Uri(config.YasnoWebScrapperClient.ServiceUrl);
+        //});
 
         return services;
     }
