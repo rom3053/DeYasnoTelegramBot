@@ -13,19 +13,17 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 ConfigurationManager configuration = builder.Configuration;
 
-//TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
+TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
 
 
-//builder.Services
-//    .AddFeatureManagement(configuration.GetSection("FeatureFlags"));
-//builder.Services.AddApplicationServices();
-//builder.Services.AddInfrastructureServices(configuration, bot);
+builder.Services
+    .AddFeatureManagement(configuration.GetSection("FeatureFlags"));
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(configuration, bot);
 
-builder.Services.AddInfrastructureServices(configuration, null);
-
-//builder.Services.AddHostedService<OutageNotificationAt5minJob>();
-//builder.Services.AddHostedService<OutageNotificationAt15minJob>();
-//builder.Services.AddHostedService<OutageNotificationAt30minJob>();
+builder.Services.AddHostedService<OutageNotificationAt5minJob>();
+builder.Services.AddHostedService<OutageNotificationAt15minJob>();
+builder.Services.AddHostedService<OutageNotificationAt30minJob>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -37,15 +35,15 @@ builder.Services.AddSwaggerGen();
 
 WebApplication app = builder.Build();
 
-//using var scope = app.Services.CreateScope();
-//var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
-//await initialiser.InitialiseAsync();
+using var scope = app.Services.CreateScope();
+var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+await initialiser.InitialiseAsync();
 
-//bot.StartReceiving(
-//    HandleUpdateAsync,
-//    HandlePollingErrorAsync,
-//    new ReceiverOptions(),
-//    new CancellationToken());
+bot.StartReceiving(
+    HandleUpdateAsync,
+    HandlePollingErrorAsync,
+    new ReceiverOptions(),
+    new CancellationToken());
 
 // Configure the HTTP request pipeline.
 

@@ -14,8 +14,6 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       APP_NAME: deyasno
       CONTAINER_NAME: deyasno
-      CONNECTION_STRING: ${{ vars.CONNECTION_STRING }}
-      API_KEY: sdadasdsad
 
     steps:
     - name: Checkout code
@@ -28,8 +26,9 @@ jobs:
 
     - name: Replace value in appsettings.json
       run: |
-        jq '.DeYasno.ConnectionStrings.DefaultConnection = "${{ env.CONNECTION_STRING }}" |
-           .DeYasno.YasnoWebScrapperClient.ApiKey = "${{ env.API_KEY }}"' ./src/DeYasnoTelegramBot/appsettings.json > temp.json
+        jq '.DeYasno.ConnectionStrings.DefaultConnection = "${{ vars.CONNECTION_STRING }}" |
+            .TelegramBotKey = "${{ secrets.TELEGRAM_BOT_KEY }}" |
+            .DeYasno.YasnoWebScrapperClient.ServiceUrl = "${{ vars.YASNO_WEB_SCRAPPER_URL }}"' ./src/DeYasnoTelegramBot/appsettings.json > temp.json
         mv temp.json ./src/DeYasnoTelegramBot/appsettings.json
 
     - name: Verify changes
