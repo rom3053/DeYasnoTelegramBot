@@ -14,7 +14,7 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       APP_NAME: deyasno
       CONTAINER_NAME: deyasno
-      CONNECTION_STRING: ${{ variables.CONNECTIONSTRING }}
+      CONNECTION_STRING: ${{ vars.CONNECTIONSTRING }}
       API_KEY: sdadasdsad
 
     steps:
