@@ -26,7 +26,7 @@ public class OutageNotificationAt5minJob : BackgroundService
         IServiceProvider serviceProvider,
         ILogger<OutageNotificationAt5minJob> logger)
     {
-        _periodicTimer = new(TimeSpan.FromMinutes(1));
+        _periodicTimer = new(TimeSpan.FromSeconds(20));
         //_botClient = botClient;
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -41,19 +41,22 @@ public class OutageNotificationAt5minJob : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt5minJob));
-                //TODO add toogle feacture for deactivated notifications
-                await using var scope = _serviceProvider.CreateAsyncScope();
-                var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
-                var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
-                
-                if (!await manager.IsEnabledAsync("OutageNotification"))
+                if (CronHelper.IsTimeToExecute("55 * * * *"))
                 {
-                    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt5minJob));
-                    return;
-                }
+                    _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt5minJob));
+                    //TODO add toogle feacture for deactivated notifications
+                    await using var scope = _serviceProvider.CreateAsyncScope();
+                    var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
+                    var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
 
-                notificationService.NotifyIn5min(_outageNotifed, _greyZoneNotifed, _powerOnNotifed);
+                    if (!await manager.IsEnabledAsync("OutageNotification"))
+                    {
+                        _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt5minJob));
+                        return;
+                    }
+
+                    notificationService.NotifyIn5min(_outageNotifed, _greyZoneNotifed, _powerOnNotifed);
+                }
                 //var ukraineDateTimeNow = DateTime.UtcNow;
                 //var dateTimeToNotificationNow = DateTime.UtcNow + TimeSpan.FromMinutes(5);
                 //// Define the Ukraine time zone (Kyiv time)

@@ -1,8 +1,7 @@
-﻿
+﻿using Cronos;
+using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Services;
 using Microsoft.FeatureManagement;
-using System.Threading;
-using Telegram.Bot;
 
 namespace DeYasnoTelegramBot.Background;
 
@@ -20,7 +19,7 @@ public class OutageNotificationAt15minJob : BackgroundService
         IServiceProvider serviceProvider,
         ILogger<OutageNotificationAt15minJob> logger)
     {
-        _periodicTimer = new(TimeSpan.FromMinutes(5));
+        _periodicTimer = new(TimeSpan.FromSeconds(30));
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
@@ -30,21 +29,25 @@ public class OutageNotificationAt15minJob : BackgroundService
         while (await _periodicTimer.WaitForNextTickAsync(cancellationToken) &&
             !cancellationToken.IsCancellationRequested)
         {
+
             try
             {
-                _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt15minJob));
-                //TODO add toogle feacture for deactivated notifications
-                await using var scope = _serviceProvider.CreateAsyncScope();
-                var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
-                var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
-
-                if (!await manager.IsEnabledAsync("OutageNotification"))
+                if (CronHelper.IsTimeToExecute("45 * * * *"))
                 {
-                    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt15minJob));
-                    return;
-                }
+                    _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt15minJob));
+                    //TODO add toogle feacture for deactivated notifications
+                    await using var scope = _serviceProvider.CreateAsyncScope();
+                    var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
+                    var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
 
-                notificationService.NotifyIn15min(_outageNotifed15min, _greyZoneNotifed15min, _powerOnNotifed15min);
+                    if (!await manager.IsEnabledAsync("OutageNotification"))
+                    {
+                        _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt15minJob));
+                        return;
+                    }
+
+                    notificationService.NotifyIn15min(_outageNotifed15min, _greyZoneNotifed15min, _powerOnNotifed15min);
+                }
             }
             catch (Exception ex)
             {
