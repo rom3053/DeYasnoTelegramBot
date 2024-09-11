@@ -15,6 +15,14 @@ ConfigurationManager configuration = builder.Configuration;
 
 TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
 
+//ToDo: background for cleaning empty schedules
+//ToDo: background for updating all users schedules
+//ToDo: add logger to db like a new DB with own connection
+//ToDo: some validations
+//ToDo: send a address to screenshot
+//ToDo: maybe reuse browser session
+//ToDo: diasbale notification command
+//ToDo:
 builder.Services
     .AddFeatureManagement(configuration.GetSection("DeYasno:FeatureFlags"));
 builder.Services.AddApplicationServices();
@@ -28,9 +36,6 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-//Hosted services
-
 
 WebApplication app = builder.Build();
 
