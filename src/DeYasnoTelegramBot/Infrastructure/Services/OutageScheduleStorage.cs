@@ -67,6 +67,29 @@ public class OutageScheduleStorage
 
         return true;
     }
+
+    public string GetKeyHashSchedule(Subscriber subscriber)
+    {
+        // Serialize the object to a JSON string
+        var jsonString = JsonConvert.SerializeObject(subscriber.OutageSchedules);
+
+        // Compute the SHA256 hash
+        byte[] bytes = Encoding.UTF8.GetBytes(jsonString);
+        byte[] hashBytes = SHA256.HashData(bytes);
+
+        // Convert the byte array to a hexadecimal string
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < hashBytes.Length; i++)
+        {
+            sb.Append(hashBytes[i].ToString("x2"));
+        }
+
+        var hashOfOutageSchedule = sb.ToString();
+
+        var newKey = $"{subscriber.UserRegion}_{subscriber.UserCity}_{hashOfOutageSchedule}";
+
+        return newKey;
+    }
 }
 
 public class CachedNotificationList

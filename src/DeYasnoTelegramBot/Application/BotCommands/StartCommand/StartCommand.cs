@@ -71,7 +71,6 @@ public class StartCommandHandler : IRequestHandler<StartCommand>
 
         var message = await _botClient.SendTextMessageAsync(chatId, NotificationMessages.CommandMessages.StartCommand.CommandText,
             parseMode: ParseMode.Html,
-            protectContent: true,
             replyMarkup: inlineMarkup);
 
         return;

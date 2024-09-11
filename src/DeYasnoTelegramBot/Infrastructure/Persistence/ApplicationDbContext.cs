@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection.Emit;
-using DeYasnoTelegramBot.Domain.Entities;
+﻿using DeYasnoTelegramBot.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeYasnoTelegramBot.Infrastructure.Persistence;
@@ -11,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        //ToDo: Investigate postgres jsonb and EF entity settings 
         builder.Entity<Subscriber>()
             .Property(p => p.OutageSchedules)
             .HasColumnType("jsonb");

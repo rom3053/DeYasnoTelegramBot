@@ -41,5 +41,10 @@ public static class NotificationMessages
             public const string PowerOff = "Зараз світло нема.";
             public const string PowerPossibleOn = "Зараз сіра зона.";
         }
+
+        public static class UpdateOwnScheduleCommand
+        {
+            public const string CommandSuccessText = "Ваш графік оновлено в системі.";
+        }
     }
 }

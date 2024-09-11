@@ -1,13 +1,13 @@
-﻿using DeYasnoTelegramBot.Application.Common.Dtos.YasnoWebScrapper;
-using System.Text;
+﻿using System.Text;
+using DeYasnoTelegramBot.Application.Common.Dtos;
+using DeYasnoTelegramBot.Application.Common.Dtos.Subscriber;
+using DeYasnoTelegramBot.Application.Common.Dtos.YasnoWebScrapper;
+using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Domain.Entities;
 using DeYasnoTelegramBot.Domain.Enums;
 using DeYasnoTelegramBot.Infrastructure.HttpClients;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
-using DeYasnoTelegramBot.Application.Common.Dtos;
-using DeYasnoTelegramBot.Application.Common.Dtos.Subscriber;
-using DeYasnoTelegramBot.Application.Common.Helpers;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
@@ -144,7 +144,27 @@ public class OutageInputService
         return scheduleTableDto;
     }
 
-    async Task SendMessage(long chatId, string text, string options = null)
+    public async Task<SessionDto> InitNewSessionAutoInput(string userRegion, string userCity, string userStreet, string userHouseNumber)
+    {
+        var session = await _yasnoWebScrapperHttpClient.InitSessionAsync();
+        await _yasnoWebScrapperHttpClient.InputRegion(session.SessionId, userRegion);
+
+        var options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputCity(session.SessionId, userCity);
+        var optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault();
+        var response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
+
+        options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputStreet(session.SessionId, userCity);
+        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault();
+        response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
+
+        options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputHouseNumber(session.SessionId, userCity);
+        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault();
+        response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
+
+        return session;
+    }
+
+    private async Task SendMessage(long chatId, string text, string options = null)
     {
         try
         {
@@ -164,7 +184,7 @@ public class OutageInputService
 
     }
 
-    static string ConvertToHtmlList(List<DropdownOptionDto> options)
+    private static string ConvertToHtmlList(List<DropdownOptionDto> options)
     {
         StringBuilder htmlBuilder = new StringBuilder();
 

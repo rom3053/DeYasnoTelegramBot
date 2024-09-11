@@ -1,13 +1,10 @@
 ﻿using DeYasnoTelegramBot.Application.BotCommands.Base;
-using DeYasnoTelegramBot.Application.Common.Dtos.YasnoWebScrapper;
+using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using static System.Net.Mime.MediaTypeNames;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
 using Telegram.Bot;
-using DeYasnoTelegramBot.Application.Common.Helpers;
+using Telegram.Bot.Types.Enums;
 
 namespace DeYasnoTelegramBot.Application.BotCommands.GetOutageStatusCommand;
 
@@ -54,5 +51,7 @@ public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusComm
                 parseMode: ParseMode.Html,
                 protectContent: false);
         }
+
+        return;
     }
 }
