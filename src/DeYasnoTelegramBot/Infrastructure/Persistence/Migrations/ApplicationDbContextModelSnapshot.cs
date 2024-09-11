@@ -51,7 +51,7 @@ namespace DeYasnoTelegramBot.Infrastructure.Persistence.Migrations
 
                     b.HasKey("ChatId");
 
-                    b.ToTable("Subscribers");
+                    b.ToTable("Subscribers", (string)null);
                 });
 #pragma warning restore 612, 618
         }

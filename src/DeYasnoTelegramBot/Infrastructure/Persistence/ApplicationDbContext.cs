@@ -9,7 +9,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        //ToDo: Investigate postgres jsonb and EF entity settings 
+        //ToDo: Investigate postgres jsonb and EF entity settings
+        //Didn`t work to map sub-documents many in many
+        //document with sub-documents you can map
+        //but not documents with sub-documents
         builder.Entity<Subscriber>()
             .Property(p => p.OutageSchedules)
             .HasColumnType("jsonb");

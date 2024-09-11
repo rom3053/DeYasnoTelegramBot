@@ -1,4 +1,5 @@
-﻿using DeYasnoTelegramBot.Application.BotCommands.Base;
+﻿using System.Collections.Generic;
+using DeYasnoTelegramBot.Application.BotCommands.Base;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
 using MediatR;
@@ -26,21 +27,21 @@ public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusComm
 
     public async Task Handle(GetOutageStatusCommand request, CancellationToken cancellationToken)
     {
+        //ToDo to helper for time with zone or extenson
         var dateTimeNow = DateTime.UtcNow;
+
         var schedule = await _context.Subscribers.Where(x => x.ChatId == request.ChatId)
-            .Select(o => new
-            {
-                currentOutageHour = o.OutageSchedules.Where(s => s.NumberWeekDay == (int)dateTimeNow.DayOfWeek)
-                        .SelectMany(d => d.OutageHours)
-                        .Where(dd => dd.Hour == dateTimeNow.Hour)
-                        .FirstOrDefault(),
-            })
-            .Select(r => r.currentOutageHour)
+            .Select(o => o.OutageSchedules)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (schedule != null)
+        var currentOutageHour = schedule.Where(s => s.NumberWeekDay == (int)dateTimeNow.DayOfWeek)
+            .SelectMany(d => d.OutageHours)
+            .Where(dd => dd.Hour == dateTimeNow.Hour)
+            .FirstOrDefault();
+
+        if (currentOutageHour != null)
         {
-            var statusText = schedule.Status switch
+            var statusText = currentOutageHour.Status switch
             {
                 Domain.Enums.OutageStatus.PowerOn => NotificationMessages.CommandMessages.GetOutageStatusCommand.PowerOn,
                 Domain.Enums.OutageStatus.PowerOff => NotificationMessages.CommandMessages.GetOutageStatusCommand.PowerOff,

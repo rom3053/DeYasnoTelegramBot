@@ -8,7 +8,7 @@ public static class BotCommands
 
     public const string UpdateOwnSchedule = "/update";
 
-    public const string OutageStatusNow = @"/status\_now";
+    public const string OutageStatusNow = "/status_now";
 
     public static class CallbackCommands
     {

@@ -20,10 +20,4 @@ public class VersionController : ControllerBase
     {
         return Redirect("https://dn720407.ca.archive.org/0/items/rick-roll/Rick%20Roll.mp4");
     }
-
-    [HttpGet("appsettings")]
-    public async Task<IActionResult> GetAppsettings()
-    {
-        return Ok(_deYasnoConfig);
-    }
 }
