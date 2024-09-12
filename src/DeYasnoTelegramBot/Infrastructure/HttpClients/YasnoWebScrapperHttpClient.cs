@@ -95,7 +95,7 @@ public class YasnoWebScrapperHttpClient : BaseHttpClient
     public async Task<FileDto> GetScheduleScreenshot(string sessionId, string cityName)
     {
         QueryString paramsQuery = new QueryString();
-        paramsQuery.Add("cityName", cityName);
+        paramsQuery = paramsQuery.Add("cityName", cityName);
 
         var url = GetUrl(YasnoScrapperApiActions.GetScheduleScreenshot).Replace("{sessionId}", sessionId) + paramsQuery;
 
