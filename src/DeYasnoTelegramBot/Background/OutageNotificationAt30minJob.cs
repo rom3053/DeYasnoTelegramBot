@@ -44,7 +44,7 @@ public class OutageNotificationAt30minJob : BackgroundService
                         return;
                     }
 
-                    notificationService.NotifyIn30min(_outageNotifed30min, _greyZoneNotifed30min, _powerOnNotifed30min);
+                    await notificationService.NotifyIn30min(_outageNotifed30min, _greyZoneNotifed30min, _powerOnNotifed30min);
                 }
             }
             catch (Exception ex)

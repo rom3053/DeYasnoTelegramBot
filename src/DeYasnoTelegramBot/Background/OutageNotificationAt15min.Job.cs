@@ -1,5 +1,4 @@
-﻿using Cronos;
-using DeYasnoTelegramBot.Application.Common.Helpers;
+﻿using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Services;
 using Microsoft.FeatureManagement;
 
@@ -46,7 +45,7 @@ public class OutageNotificationAt15minJob : BackgroundService
                         return;
                     }
 
-                    notificationService.NotifyIn15min(_outageNotifed15min, _greyZoneNotifed15min, _powerOnNotifed15min);
+                    await notificationService.NotifyIn15min(_outageNotifed15min, _greyZoneNotifed15min, _powerOnNotifed15min);
                 }
             }
             catch (Exception ex)
