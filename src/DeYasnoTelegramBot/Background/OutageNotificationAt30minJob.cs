@@ -18,7 +18,7 @@ public class OutageNotificationAt30minJob : BackgroundService
         IServiceProvider serviceProvider,
         ILogger<OutageNotificationAt30minJob> logger)
     {
-        _periodicTimer = new(TimeSpan.FromSeconds(30));
+        _periodicTimer = new(TimeSpan.FromSeconds(20));
         _serviceProvider = serviceProvider;
         _logger = logger;
     }

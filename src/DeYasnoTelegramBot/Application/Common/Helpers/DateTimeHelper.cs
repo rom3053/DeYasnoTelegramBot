@@ -9,6 +9,7 @@ public static class DateTimeHelper
     {
         TimeZoneInfo ukraineTimeZone = TimeZoneInfo.FindSystemTimeZoneById(OperatingSystem.IsWindows() ? WINDOWS_TIME_ZONE_ID : LINUX_macOS_TIME_ZONE_ID);
 
-        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ukraineTimeZone);
+        var ss = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ukraineTimeZone);
+        return ss;
     }
 }

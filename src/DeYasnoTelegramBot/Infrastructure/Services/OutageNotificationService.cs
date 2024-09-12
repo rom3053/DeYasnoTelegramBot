@@ -2,6 +2,7 @@
 using DeYasnoTelegramBot.Application.Common.Extensions;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
@@ -90,7 +91,7 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                _botClient.SendMessage(chatId, notificationMessage);
+                SendMessage(chatId, notificationMessage);
             }
             //add new notifed
             powerOffNotificationFlags.UnionWith(needNotify);
@@ -126,7 +127,7 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                _botClient.SendMessage(chatId, notificationMessage);
+                SendMessage(chatId, notificationMessage);
             }
             //add new notifed
             powerPossibleOnNotificationFlags.UnionWith(needNotify);
@@ -162,12 +163,19 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                _botClient.SendMessage(chatId, notificationMessage);
+                SendMessage(chatId, notificationMessage);
             }
             //add new notifed
             powerOnNotificationFlags.UnionWith(needNotify);
             //clean
             nextNotificationFlags.ExceptWith(needNotify);
         }
+    }
+
+    async Task SendMessage(long chatId, string messageText)
+    {
+        var message = await _botClient.SendTextMessageAsync(chatId,
+            text: messageText,
+            parseMode: ParseMode.Html);
     }
 }
