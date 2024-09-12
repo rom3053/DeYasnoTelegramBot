@@ -1,9 +1,7 @@
 ﻿using System.Collections.Concurrent;
-using System.Linq;
 using DeYasnoTelegramBot.Application.Common.Extensions;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
@@ -58,27 +56,9 @@ public class OutageNotificationService
 
     private static void GetUkraineNotificationTimes(TimeSpan inTimeMinutes, out DateTime ukraineNotificationTime, out DateTime ukraineDateTimeNow, out int notificationHour, out int prevNotificationHour)
     {
-        var dateTimeNow = DateTime.UtcNow;
-        var notificationTime = DateTime.UtcNow + inTimeMinutes;
-        // Define the Ukraine time zone (Kyiv time)
+        ukraineNotificationTime = DateTimeHelper.GetUkraineTimeNow();
+        ukraineDateTimeNow = DateTimeHelper.GetUkraineTimeNow() + inTimeMinutes;
 
-        string timeZoneId;
-
-        if (OperatingSystem.IsWindows())
-        {
-            timeZoneId = "FLE Standard Time";  // Windows time zone ID
-        }
-        else
-        {
-            timeZoneId = "Europe/Kyiv";  // IANA time zone ID for Linux/macOS
-        }
-
-        // Find the time zone info based on the ID
-        TimeZoneInfo ukraineTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-
-        // Convert the UTC time to Ukraine time
-        ukraineNotificationTime = TimeZoneInfo.ConvertTimeFromUtc(notificationTime, ukraineTimeZone);
-        ukraineDateTimeNow = TimeZoneInfo.ConvertTimeFromUtc(dateTimeNow, ukraineTimeZone);
         notificationHour = ukraineNotificationTime.TimeOfDay.Hours;
         prevNotificationHour = notificationHour - 1;
     }
@@ -110,7 +90,7 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                SendMessage(chatId, notificationMessage);
+                _botClient.SendMessage(chatId, notificationMessage);
             }
             //add new notifed
             powerOffNotificationFlags.UnionWith(needNotify);
@@ -146,7 +126,7 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                SendMessage(chatId, notificationMessage);
+                _botClient.SendMessage(chatId, notificationMessage);
             }
             //add new notifed
             powerPossibleOnNotificationFlags.UnionWith(needNotify);
@@ -182,27 +162,12 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                SendMessage(chatId, notificationMessage);
+                _botClient.SendMessage(chatId, notificationMessage);
             }
             //add new notifed
             powerOnNotificationFlags.UnionWith(needNotify);
             //clean
             nextNotificationFlags.ExceptWith(needNotify);
         }
-    }
-
-    async Task SendMessage(long chatId, string text)
-    {
-        try
-        {
-            var message = await _botClient.SendTextMessageAsync(chatId, text,
-                parseMode: ParseMode.Html,
-                protectContent: false);
-        }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
-
     }
 }

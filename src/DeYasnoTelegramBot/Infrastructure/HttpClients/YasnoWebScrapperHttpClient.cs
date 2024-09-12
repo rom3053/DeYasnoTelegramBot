@@ -92,9 +92,12 @@ public class YasnoWebScrapperHttpClient : BaseHttpClient
         return response;
     }
 
-    public async Task<FileDto> GetScheduleScreenshot(string sessionId)
+    public async Task<FileDto> GetScheduleScreenshot(string sessionId, string cityName)
     {
-        var url = GetUrl(YasnoScrapperApiActions.GetScheduleScreenshot).Replace("{sessionId}", sessionId);
+        QueryString paramsQuery = new QueryString();
+        paramsQuery.Add("cityName", cityName);
+
+        var url = GetUrl(YasnoScrapperApiActions.GetScheduleScreenshot).Replace("{sessionId}", sessionId) + paramsQuery;
 
         var response = await GetAsync<FileDto>(url, "Get schedule sreenshot");
 

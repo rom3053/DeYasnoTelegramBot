@@ -2,12 +2,13 @@
 using DeYasnoTelegramBot.Application.Common.Dtos;
 using DeYasnoTelegramBot.Application.Common.Dtos.Subscriber;
 using DeYasnoTelegramBot.Application.Common.Dtos.YasnoWebScrapper;
+using DeYasnoTelegramBot.Application.Common.Exceptions;
+using DeYasnoTelegramBot.Application.Common.Extensions;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Domain.Entities;
 using DeYasnoTelegramBot.Domain.Enums;
 using DeYasnoTelegramBot.Infrastructure.HttpClients;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
@@ -130,9 +131,9 @@ public class OutageInputService
         };
     }
 
-    public async Task<FileDto> GetScheduleOutageScreenshotAsync(string browserSessionId)
+    public async Task<FileDto> GetScheduleOutageScreenshotAsync(string browserSessionId, string cityName)
     {
-        var scheduleDto = await _yasnoWebScrapperHttpClient.GetScheduleScreenshot(browserSessionId);
+        var scheduleDto = await _yasnoWebScrapperHttpClient.GetScheduleScreenshot(browserSessionId, cityName);
 
         return scheduleDto;
     }
@@ -150,15 +151,18 @@ public class OutageInputService
         await _yasnoWebScrapperHttpClient.InputRegion(session.SessionId, userRegion);
 
         var options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputCity(session.SessionId, userCity);
-        var optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault();
+        var optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault(-1);
+        ValidateAutoInput(optionIndex);
         var response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
 
         options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputStreet(session.SessionId, userStreet);
-        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault();
+        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault(-1);
+        ValidateAutoInput(optionIndex);
         response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
 
         options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputHouseNumber(session.SessionId, userHouseNumber);
-        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault();
+        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault(-1);
+        ValidateAutoInput(optionIndex);
         response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
 
         return session;
@@ -166,22 +170,7 @@ public class OutageInputService
 
     private async Task SendMessage(long chatId, string text, string options = null)
     {
-        try
-        {
-            if (options is not null)
-            {
-                text = $"{text}\n{options}";
-            }
-
-            var message = await _botClient.SendTextMessageAsync(chatId, text,
-                parseMode: ParseMode.Html,
-                protectContent: true);
-        }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
-
+       await _botClient.SendMessage(chatId, text, options);
     }
 
     private static string ConvertToHtmlList(List<DropdownOptionDto> options)
@@ -194,5 +183,13 @@ public class OutageInputService
         }
 
         return htmlBuilder.ToString();
+    }
+
+    private static void ValidateAutoInput(int index)
+    {
+        if (index == -1)
+        {
+            throw new AutoInputException();
+        }
     }
 }

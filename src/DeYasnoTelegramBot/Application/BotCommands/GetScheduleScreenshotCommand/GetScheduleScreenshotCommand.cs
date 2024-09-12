@@ -31,18 +31,29 @@ public class GetScheduleScreenshotCommandHandler : IRequestHandler<GetScheduleSc
 
     public async Task Handle(GetScheduleScreenshotCommand request, CancellationToken cancellationToken)
     {
-        var sub = await _context.Subscribers.FirstOrDefaultAsync(x => x.ChatId == request.ChatId);
-        //ToDO validation aboit all data of user
-        if (sub is not null)
+        var subInfo = await _context.Subscribers.Where(x => !string.IsNullOrEmpty(x.UserRegion) &&
+            !string.IsNullOrEmpty(x.UserCity) && !string.IsNullOrEmpty(x.UserStreet) &&
+            !string.IsNullOrEmpty(x.UserHouseNumber))
+            .Select(x => new
+            {
+                x.ChatId,
+                x.UserRegion,
+                x.UserCity,
+                x.UserStreet,
+                x.UserHouseNumber,
+            })
+            .FirstOrDefaultAsync(x => x.ChatId == request.ChatId, cancellationToken);
+
+        if (subInfo is not null)
         {
-            //TODO need to rework for init all scrapper steps and return or save into DB and return bytes
-            var fileDto = await _outageInputService.GetScheduleOutageScreenshotAsync(sub.BrowserSessionId);
+            var session = await _outageInputService.InitNewSessionAutoInput(subInfo.UserRegion, subInfo.UserCity, subInfo.UserStreet, subInfo.UserHouseNumber);
+            var fileDto = await _outageInputService.GetScheduleOutageScreenshotAsync(session.SessionId, subInfo.UserCity);
 
             if (fileDto != null)
             {
                 using var ms = new MemoryStream(fileDto.Bytes);
 
-                var message = await _botClient.SendPhotoAsync(sub.ChatId,
+                var message = await _botClient.SendPhotoAsync(subInfo.ChatId,
                     photo: InputFile.FromStream(ms, fileName: fileDto.Name),
                     caption: NotificationMessages.CommandMessages.GetScheduleScreenshotCommand,
                     parseMode: ParseMode.Html,

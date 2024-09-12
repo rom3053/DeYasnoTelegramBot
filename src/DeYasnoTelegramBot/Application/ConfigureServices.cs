@@ -1,4 +1,7 @@
-﻿namespace DeYasnoTelegramBot.Application;
+﻿using MediatR;
+using DeYasnoTelegramBot.Application.Common.Behaviours;
+
+namespace DeYasnoTelegramBot.Application;
 
 public static class ConfigureServices
 {
@@ -6,6 +9,7 @@ public static class ConfigureServices
     {
         services.AddMemoryCache();
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
 
         return services;
     }

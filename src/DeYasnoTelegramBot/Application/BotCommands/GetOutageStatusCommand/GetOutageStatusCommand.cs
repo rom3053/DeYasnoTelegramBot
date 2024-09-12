@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using DeYasnoTelegramBot.Application.BotCommands.Base;
+﻿using DeYasnoTelegramBot.Application.BotCommands.Base;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
 using MediatR;
@@ -27,8 +26,7 @@ public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusComm
 
     public async Task Handle(GetOutageStatusCommand request, CancellationToken cancellationToken)
     {
-        //ToDo to helper for time with zone or extenson
-        var dateTimeNow = DateTime.UtcNow;
+        var dateTimeNow = DateTimeHelper.GetUkraineTimeNow();
 
         var schedule = await _context.Subscribers.Where(x => x.ChatId == request.ChatId)
             .Select(o => o.OutageSchedules)
