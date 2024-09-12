@@ -156,12 +156,12 @@ public class OutageInputService
         var response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
 
         options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputStreet(session.SessionId, userStreet);
-        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault(-1);
+        optionIndex = options.Where(x => x.Text.Contains(userStreet)).Select(x => x.Index).FirstOrDefault(-1);
         ValidateAutoInput(optionIndex);
         response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
 
         options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputHouseNumber(session.SessionId, userHouseNumber);
-        optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault(-1);
+        optionIndex = options.Where(x => x.Text.Contains(userHouseNumber)).Select(x => x.Index).FirstOrDefault(-1);
         ValidateAutoInput(optionIndex);
         response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
 
