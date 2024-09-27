@@ -62,3 +62,4 @@ jobs:
           docker rm ${{ env.CONTAINER_NAME }} || true
           docker run -d --name ${{ env.CONTAINER_NAME }} --network=deyasnonetwork --user root -p 8080:8080 ${{ env.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
 
+
