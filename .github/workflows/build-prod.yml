@@ -28,6 +28,7 @@ jobs:
       run: |
         jq '.DeYasno.ConnectionStrings.DefaultConnection = "${{ vars.CONNECTION_STRING }}" |
             .TelegramBotKey = "${{ secrets.TELEGRAM_BOT_KEY }}" |
+            .DeYasno.ConnectionStrings.LoggingConnection = "${{ vars.LOGGING_CONNECTION }}" |
             .DeYasno.YasnoWebScrapperClient.ServiceUrl = "${{ vars.YASNO_WEB_SCRAPPER_URL }}"' ./src/DeYasnoTelegramBot/appsettings.json > temp.json
         mv temp.json ./src/DeYasnoTelegramBot/appsettings.json
 
