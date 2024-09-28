@@ -32,8 +32,8 @@ try
     //ToDo: diasbale notification command
     //ToDo:
     builder.ConfigLogging();
-    builder.Services
-        .AddFeatureManagement(configuration.GetSection("DeYasno:FeatureFlags"));
+    //builder.Services
+    //    .AddFeatureManagement(configuration.GetSection("DeYasno:FeatureFlags"));
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(configuration, bot);
 

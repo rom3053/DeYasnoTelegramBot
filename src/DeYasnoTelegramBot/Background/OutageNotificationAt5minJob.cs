@@ -39,13 +39,13 @@ public class OutageNotificationAt5minJob : BackgroundService
                     //TODO add toogle feacture for deactivated notifications
                     await using var scope = _serviceProvider.CreateAsyncScope();
                     var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
-                    var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
+                    //var manager = scope.ServiceProvider.GetRequiredService<IFeatureManager>();
 
-                    if (!await manager.IsEnabledAsync("OutageNotification"))
-                    {
-                        _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt5minJob));
-                        return;
-                    }
+                    //if (!await manager.IsEnabledAsync("OutageNotification"))
+                    //{
+                    //    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt5minJob));
+                    //    return;
+                    //}
 
                     await notificationService.NotifyIn5min(_outageNotifed, _greyZoneNotifed, _powerOnNotifed);
                 }
