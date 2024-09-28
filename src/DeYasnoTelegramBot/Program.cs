@@ -93,7 +93,6 @@ try
         Console.WriteLine(errorMessage);
         await Task.CompletedTask;
     }
-
 }
 catch (Exception ex)
 {
