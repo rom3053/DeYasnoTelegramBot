@@ -1,6 +1,7 @@
 ﻿using DeYasnoTelegramBot.Application.BotCommands.Base;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
+using DeYasnoTelegramBot.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
@@ -15,10 +16,10 @@ public class GetOutageStatusCommand : BaseCommand, IRequest<string>
 public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusCommand>
 {
     private readonly ApplicationDbContext _context;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotClientSender _botClient;
 
     public GetOutageStatusCommandHandler(ApplicationDbContext context,
-        ITelegramBotClient botClient)
+        TelegramBotClientSender botClient)
     {
         _context = context;
         _botClient = botClient;
@@ -46,9 +47,7 @@ public class GetOutageStatusCommandHandler : IRequestHandler<GetOutageStatusComm
                 Domain.Enums.OutageStatus.PowerPossibleOn => NotificationMessages.CommandMessages.GetOutageStatusCommand.PowerPossibleOn,
             };
 
-            var message = await _botClient.SendTextMessageAsync(request.ChatId, statusText,
-                parseMode: ParseMode.Html,
-                protectContent: false);
+            await _botClient.SendMessageAsync(request.ChatId, statusText);
         }
 
         return;

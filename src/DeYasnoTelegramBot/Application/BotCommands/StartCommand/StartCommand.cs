@@ -2,6 +2,7 @@
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Domain.Enums;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
+using DeYasnoTelegramBot.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
@@ -18,13 +19,16 @@ public class StartCommand : BaseCommand
 public class StartCommandHandler : IRequestHandler<StartCommand>
 {
     private readonly ApplicationDbContext _context;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotClientSender _botClient;
+    private readonly OutageScheduleStorage _outageScheduleStorage;
 
     public StartCommandHandler(ApplicationDbContext applicationDbContext,
-        ITelegramBotClient botClient)
+        TelegramBotClientSender botClient,
+        OutageScheduleStorage outageScheduleStorage)
     {
         _context = applicationDbContext;
         _botClient = botClient;
+        _outageScheduleStorage = outageScheduleStorage;
     }
 
     public async Task Handle(StartCommand request, CancellationToken cancellationToken)
@@ -58,6 +62,8 @@ public class StartCommandHandler : IRequestHandler<StartCommand>
             sub.UserCity = default;
             sub.UserHouseNumber = default;
             sub.UserRegion = default;
+            sub.OutageSchedules = default;
+            _outageScheduleStorage.TryRemove(sub);
 
             _context.Subscribers.Update(sub);
             await _context.SaveChangesAsync();
@@ -69,8 +75,7 @@ public class StartCommandHandler : IRequestHandler<StartCommand>
             InlineKeyboardButton.WithCallbackData(NotificationMessages.CommandMessages.StartCommand.Dnipro, Common.Constants.BotCommands.CallbackCommands.SelectedDnipro),
         });
 
-        var message = await _botClient.SendTextMessageAsync(chatId, NotificationMessages.CommandMessages.StartCommand.CommandText,
-            parseMode: ParseMode.Html,
+        await _botClient.SendMessageAsync(chatId, NotificationMessages.CommandMessages.StartCommand.CommandText,
             replyMarkup: inlineMarkup);
 
         return;

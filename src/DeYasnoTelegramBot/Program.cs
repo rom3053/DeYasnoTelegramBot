@@ -1,6 +1,7 @@
 using DeYasnoTelegramBot;
 using DeYasnoTelegramBot.Application;
 using DeYasnoTelegramBot.Background;
+using DeYasnoTelegramBot.Background.OutageNotificationJobs;
 using DeYasnoTelegramBot.Infrastructure;
 using DeYasnoTelegramBot.Infrastructure.Persistence;
 using Microsoft.FeatureManagement;
@@ -25,7 +26,6 @@ try
 
     TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
 
-    //ToDo: background for cleaning empty schedules
     //ToDo: background for updating all users schedules
     //ToDo: some validations
     //ToDo: maybe reuse browser session
@@ -40,6 +40,9 @@ try
     builder.Services.AddHostedService<OutageNotificationAt5minJob>();
     builder.Services.AddHostedService<OutageNotificationAt15minJob>();
     builder.Services.AddHostedService<OutageNotificationAt30minJob>();
+
+    builder.Services.AddHostedService<RemoveScheduleWithoutSubsJob>();
+    builder.Services.AddHostedService<NotFinishedInputAddressNotificationJob>();
 
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

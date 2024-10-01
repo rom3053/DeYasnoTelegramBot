@@ -39,6 +39,7 @@ public static class ConfigureServices
         services.AddScoped<IUpdateHandler, UpdateHandler>();
         services.AddScoped<OutageInputService>();
         services.AddScoped<OutageNotificationService>();
+        services.AddScoped<TelegramBotClientSender>();
         services.AddScoped<ApplicationDbContextInitialiser>();
         //HttpClients
         services.AddHttpClient<YasnoWebScrapperHttpClient>(options =>

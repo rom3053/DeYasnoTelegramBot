@@ -17,12 +17,12 @@ public class UpdateOwnScheduleCommand : BaseCommand
 public class UpdateOwnScheduleCommandHanlder : IRequestHandler<UpdateOwnScheduleCommand>
 {
     private readonly ApplicationDbContext _context;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotClientSender _botClient;
     private readonly OutageInputService _outageInputService;
     private readonly OutageScheduleStorage _outageScheduleStorage;
 
     public UpdateOwnScheduleCommandHanlder(ApplicationDbContext applicationDbContext,
-        ITelegramBotClient botClient,
+        TelegramBotClientSender botClient,
         OutageInputService outageInputService,
         OutageScheduleStorage outageScheduleStorage)
     {
@@ -54,12 +54,7 @@ public class UpdateOwnScheduleCommandHanlder : IRequestHandler<UpdateOwnSchedule
 
             var sub = await _context.Subscribers.FirstOrDefaultAsync(x => x.ChatId == request.ChatId);
 
-            //get notification list of schedule
-            var key = _outageScheduleStorage.GetKeyHashSchedule(sub);
-            _outageScheduleStorage.NotificationList.TryGetValue(key, out var notification);
-
-            if (notification != null)
-                notification.ChatIds.Remove(sub.ChatId);
+            _outageScheduleStorage.TryRemove(sub);
 
             //update and add a new schedule
             sub.OutageSchedules = outageScheduleDto;
@@ -67,9 +62,8 @@ public class UpdateOwnScheduleCommandHanlder : IRequestHandler<UpdateOwnSchedule
             _context.Subscribers.Update(sub);
             await _context.SaveChangesAsync();
 
-            var message = await _botClient.SendTextMessageAsync(sub.ChatId,
-                text: NotificationMessages.CommandMessages.UpdateOwnScheduleCommand.CommandSuccessText,
-                parseMode: ParseMode.Html);
+            await _botClient.SendMessageAsync(sub.ChatId,
+                text: NotificationMessages.CommandMessages.UpdateOwnScheduleCommand.CommandSuccessText);
 
             return;
         }

@@ -2,7 +2,7 @@
 using DeYasnoTelegramBot.Infrastructure.Services;
 using Microsoft.FeatureManagement;
 
-namespace DeYasnoTelegramBot.Background;
+namespace DeYasnoTelegramBot.Background.OutageNotificationJobs;
 
 public class OutageNotificationAt30minJob : BackgroundService
 {
@@ -44,7 +44,7 @@ public class OutageNotificationAt30minJob : BackgroundService
                     //    return;
                     //}
 
-                    await notificationService.NotifyIn30min(_outageNotifed30min, _greyZoneNotifed30min, _powerOnNotifed30min);
+                    await notificationService.NotifyIn30minAsync(_outageNotifed30min, _greyZoneNotifed30min, _powerOnNotifed30min);
                 }
             }
             catch (Exception ex)

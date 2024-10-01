@@ -1,23 +1,22 @@
 ﻿using DeYasnoTelegramBot.Application.Common.Helpers;
 using DeYasnoTelegramBot.Infrastructure.Services;
 using Microsoft.FeatureManagement;
-using Telegram.Bot;
 
-namespace DeYasnoTelegramBot.Background;
+namespace DeYasnoTelegramBot.Background.OutageNotificationJobs;
 
-public class OutageNotificationAt5minJob : BackgroundService
+public class OutageNotificationAt15minJob : BackgroundService
 {
-    private readonly ILogger<OutageNotificationAt5minJob> _logger;
+    private readonly ILogger<OutageNotificationAt15minJob> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly PeriodicTimer _periodicTimer;
 
-    private static HashSet<long> _outageNotifed = [];
-    private static HashSet<long> _greyZoneNotifed = [];
-    private static HashSet<long> _powerOnNotifed = [];
+    private static HashSet<long> _outageNotifed15min = [];
+    private static HashSet<long> _greyZoneNotifed15min = [];
+    private static HashSet<long> _powerOnNotifed15min = [];
 
-    public OutageNotificationAt5minJob(ITelegramBotClient botClient,
+    public OutageNotificationAt15minJob(
         IServiceProvider serviceProvider,
-        ILogger<OutageNotificationAt5minJob> logger)
+        ILogger<OutageNotificationAt15minJob> logger)
     {
         _periodicTimer = new(TimeSpan.FromSeconds(20));
         _serviceProvider = serviceProvider;
@@ -26,16 +25,14 @@ public class OutageNotificationAt5minJob : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-       //ToDO add bool for deactivaion notifications
-
         while (await _periodicTimer.WaitForNextTickAsync(cancellationToken) &&
             !cancellationToken.IsCancellationRequested)
         {
             try
             {
-                if (CronHelper.IsTimeToExecute("55 * * * *"))
+                if (CronHelper.IsTimeToExecute("45 * * * *"))
                 {
-                    _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt5minJob));
+                    _logger.LogInformation("Background {JobName} service executed", nameof(OutageNotificationAt15minJob));
                     //TODO add toogle feacture for deactivated notifications
                     await using var scope = _serviceProvider.CreateAsyncScope();
                     var notificationService = scope.ServiceProvider.GetRequiredService<OutageNotificationService>();
@@ -43,16 +40,16 @@ public class OutageNotificationAt5minJob : BackgroundService
 
                     //if (!await manager.IsEnabledAsync("OutageNotification"))
                     //{
-                    //    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt5minJob));
+                    //    _logger.LogInformation("Background {JobName} service disabled", nameof(OutageNotificationAt15minJob));
                     //    return;
                     //}
 
-                    await notificationService.NotifyIn5min(_outageNotifed, _greyZoneNotifed, _powerOnNotifed);
+                    await notificationService.NotifyIn15minAsync(_outageNotifed15min, _greyZoneNotifed15min, _powerOnNotifed15min);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message, ex.InnerException);
+                _logger.LogError(ex.Message);
             }
         }
     }

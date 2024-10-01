@@ -18,11 +18,11 @@ public class GetScheduleScreenshotCommandHandler : IRequestHandler<GetScheduleSc
 {
     private readonly OutageInputService _outageInputService;
     private readonly ApplicationDbContext _context;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotClientSender _botClient;
 
     public GetScheduleScreenshotCommandHandler(OutageInputService outageInputService,
         ApplicationDbContext context,
-        ITelegramBotClient botClient)
+        TelegramBotClientSender botClient)
     {
         _outageInputService = outageInputService;
         _context = context;
@@ -53,11 +53,10 @@ public class GetScheduleScreenshotCommandHandler : IRequestHandler<GetScheduleSc
             {
                 using var ms = new MemoryStream(fileDto.Bytes);
 
-                var message = await _botClient.SendPhotoAsync(subInfo.ChatId,
-                    photo: InputFile.FromStream(ms, fileName: fileDto.Name),
+                await _botClient.SendPhotoAsync(chatId: subInfo.ChatId,
                     caption: NotificationMessages.CommandMessages.GetScheduleScreenshotCommand,
-                    parseMode: ParseMode.Html,
-                    protectContent: false);
+                    fileName: fileDto.Name,
+                    bytes: ms);
             }
         }
     }

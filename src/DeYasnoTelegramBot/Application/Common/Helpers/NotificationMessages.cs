@@ -24,6 +24,8 @@ public static class NotificationMessages
 
     public const string Message_About_Incorrect_Input = "Відправте номер пункту.\nНаприклад:\n1. Дніпро\n2. Київ\nЯкщо хочете обрати Дніпро, то відправте <b>1</b>";
 
+    public const string Message_About_NotFinishedInputAddress = "Ви незавершили введення даних адреси в системі.\nВідправте команду \\start і пройдіть всі єтапи.";
+
     public static class CommandMessages
     {
         public const string GetScheduleScreenshotCommand = "Ваш розклад.";

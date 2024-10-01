@@ -9,6 +9,13 @@ using Newtonsoft.Json;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
+public class CachedNotificationList
+{
+    public HashSet<long> ChatIds { get; set; } = new HashSet<long>();
+
+    public List<OutageScheduleDayDto>? OutageSchedules { get; set; }
+}
+
 public class OutageScheduleStorage
 {
     public ConcurrentDictionary<string, CachedNotificationList> NotificationList = new ConcurrentDictionary<string, CachedNotificationList>();
@@ -52,6 +59,34 @@ public class OutageScheduleStorage
         return true;
     }
 
+    public bool TryRemove(Subscriber subscriber)
+    {
+        var key = GetKeyHashSchedule(subscriber);
+        var isNotification = NotificationList.TryGetValue(key, out var notification);
+
+        if (isNotification && notification != null)
+        {
+            notification.ChatIds.Remove(subscriber.ChatId);
+            return true;
+        }
+
+        return false;
+    }
+
+    public int RemoveEmptySchedules()
+    {
+        var keysEmptySchedules = NotificationList.Where(x => x.Value.ChatIds.Any())
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keysEmptySchedules)
+        {
+            NotificationList.Remove(key, out var value);
+        }
+
+        return keysEmptySchedules.Count;
+    }
+
     public string GetKeyHashSchedule(Subscriber subscriber)
     {
         // Serialize the object to a JSON string
@@ -76,9 +111,3 @@ public class OutageScheduleStorage
     }
 }
 
-public class CachedNotificationList
-{
-    public HashSet<long> ChatIds { get; set; } = new HashSet<long>();
-
-    public List<OutageScheduleDayDto>? OutageSchedules { get; set; }
-}

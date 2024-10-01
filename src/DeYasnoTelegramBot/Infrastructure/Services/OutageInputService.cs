@@ -24,10 +24,10 @@ public class OutageInputService
     private const string Message_About_Incorrect_Input = NotificationMessages.Message_About_Incorrect_Input;
 
     private readonly YasnoWebScrapperHttpClient _yasnoWebScrapperHttpClient;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotClientSender _botClient;
 
     public OutageInputService(YasnoWebScrapperHttpClient yasnoWebScrapperHttpClient,
-        ITelegramBotClient botClient)
+        TelegramBotClientSender botClient)
     {
         _yasnoWebScrapperHttpClient = yasnoWebScrapperHttpClient;
         _botClient = botClient;
@@ -170,7 +170,7 @@ public class OutageInputService
 
     private async Task SendMessage(long chatId, string text, string options = null)
     {
-       await _botClient.SendMessage(chatId, text, options);
+       await _botClient.SendMessageAsync(chatId, text, options);
     }
 
     private static string ConvertToHtmlList(List<DropdownOptionDto> options)

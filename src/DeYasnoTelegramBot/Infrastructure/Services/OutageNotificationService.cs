@@ -2,7 +2,6 @@
 using DeYasnoTelegramBot.Application.Common.Extensions;
 using DeYasnoTelegramBot.Application.Common.Helpers;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
@@ -11,48 +10,49 @@ public class OutageNotificationService
     const int ZERO_HOUR = 0;
     const int TWENTY_TRHEE_HOUR = 23;
 
-    private readonly ITelegramBotClient _botClient;
     private readonly OutageScheduleStorage _outageScheduleStorage;
     private readonly ILogger<OutageNotificationService> _logger;
+    private readonly TelegramBotClientSender _botClientSender;
 
-    public OutageNotificationService(ITelegramBotClient botClient,
+    public OutageNotificationService(
         OutageScheduleStorage outageScheduleStorage,
-        ILogger<OutageNotificationService> logger)
+        ILogger<OutageNotificationService> logger,
+        TelegramBotClientSender botClientSender)
 
     {
-        _botClient = botClient;
         _outageScheduleStorage = outageScheduleStorage;
         _logger = logger;
+        _botClientSender = botClientSender;
     }
 
-    public async Task NotifyIn5min(HashSet<long> outageNotifed, HashSet<long> greyZoneNotifed, HashSet<long> powerOnNotifed)
+    public async Task NotifyIn5minAsync(HashSet<long> outageNotifed, HashSet<long> greyZoneNotifed, HashSet<long> powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
         GetUkraineNotificationTimes(TimeSpan.FromMinutes(5), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
-        await NotifyPowerOffV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, outageNotifed, greyZoneNotifed, NotificationMessages.Message_About_5min_PowerOff);
-        await NotifyPossiblePowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, greyZoneNotifed, powerOnNotifed, NotificationMessages.Message_About_5min_PossiblePowerOn);
-        await NotifyPowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, powerOnNotifed, outageNotifed, NotificationMessages.Message_About_5min_PowerOn);
+        await NotifyPowerOffV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, outageNotifed, greyZoneNotifed, NotificationMessages.Message_About_5min_PowerOff);
+        await NotifyPossiblePowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, greyZoneNotifed, powerOnNotifed, NotificationMessages.Message_About_5min_PossiblePowerOn);
+        await NotifyPowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, powerOnNotifed, outageNotifed, NotificationMessages.Message_About_5min_PowerOn);
     }
 
-    public async Task NotifyIn15min(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
+    public async Task NotifyIn15minAsync(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
         GetUkraineNotificationTimes(TimeSpan.FromMinutes(15), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
-        await NotifyPowerOffV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _outageNotifed, _greyZoneNotifed, NotificationMessages.Message_About_15min_PowerOff);
-        await NotifyPossiblePowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _greyZoneNotifed, _powerOnNotifed, NotificationMessages.Message_About_15min_PossiblePowerOn);
-        await NotifyPowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _powerOnNotifed, _outageNotifed, NotificationMessages.Message_About_15min_PowerOn);
+        await NotifyPowerOffV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _outageNotifed, _greyZoneNotifed, NotificationMessages.Message_About_15min_PowerOff);
+        await NotifyPossiblePowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _greyZoneNotifed, _powerOnNotifed, NotificationMessages.Message_About_15min_PossiblePowerOn);
+        await NotifyPowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _powerOnNotifed, _outageNotifed, NotificationMessages.Message_About_15min_PowerOn);
     }
 
-    public async Task NotifyIn30min(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
+    public async Task NotifyIn30minAsync(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
         GetUkraineNotificationTimes(TimeSpan.FromMinutes(30), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
-        await NotifyPowerOffV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _outageNotifed, _greyZoneNotifed, NotificationMessages.Message_About_30min_PowerOff);
-        await NotifyPossiblePowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _greyZoneNotifed, _powerOnNotifed, NotificationMessages.Message_About_30min_PossiblePowerOn);
-        await NotifyPowerOnV2(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _powerOnNotifed, _outageNotifed, NotificationMessages.Message_About_30min_PowerOn);
+        await NotifyPowerOffV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _outageNotifed, _greyZoneNotifed, NotificationMessages.Message_About_30min_PowerOff);
+        await NotifyPossiblePowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _greyZoneNotifed, _powerOnNotifed, NotificationMessages.Message_About_30min_PossiblePowerOn);
+        await NotifyPowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _powerOnNotifed, _outageNotifed, NotificationMessages.Message_About_30min_PowerOn);
     }
 
     private static void GetUkraineNotificationTimes(TimeSpan inTimeMinutes, out DateTime ukraineNotificationTime, out DateTime ukraineDateTimeNow, out int notificationHour, out int prevNotificationHour)
@@ -64,7 +64,7 @@ public class OutageNotificationService
         prevNotificationHour = notificationHour - 1;
     }
 
-    private async Task NotifyPowerOffV2(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOffNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
+    private async Task NotifyPowerOffV2Async(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOffNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
     {
         var needNotify = sessions.Select(x => x.Value)
             .Select(a => new
@@ -91,7 +91,7 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-                await SendMessage(chatId, notificationMessage);
+                await _botClientSender.SendMessageAsync(chatId, notificationMessage);
             }
             //add new notifed
             powerOffNotificationFlags.UnionWith(needNotify);
@@ -100,7 +100,7 @@ public class OutageNotificationService
         }
     }
 
-    private async Task NotifyPossiblePowerOnV2(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerPossibleOnNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
+    private async Task NotifyPossiblePowerOnV2Async(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerPossibleOnNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
     {
         var needNotify = sessions.Select(x => x.Value)
             .Select(a => new
@@ -127,7 +127,7 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-               await SendMessage(chatId, notificationMessage);
+                await _botClientSender.SendMessageAsync(chatId, notificationMessage);
             }
             //add new notifed
             powerPossibleOnNotificationFlags.UnionWith(needNotify);
@@ -136,7 +136,7 @@ public class OutageNotificationService
         }
     }
 
-    private async Task NotifyPowerOnV2(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOnNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
+    private async Task NotifyPowerOnV2Async(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOnNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
     {
         var needNotify = sessions.Select(x => x.Value)
             .Select(a => new
@@ -163,26 +163,12 @@ public class OutageNotificationService
         {
             foreach (var chatId in needNotify)
             {
-              await  SendMessage(chatId, notificationMessage);
+                await _botClientSender.SendMessageAsync(chatId, notificationMessage);
             }
             //add new notifed
             powerOnNotificationFlags.UnionWith(needNotify);
             //clean
             nextNotificationFlags.ExceptWith(needNotify);
-        }
-    }
-
-    async Task SendMessage(long chatId, string messageText)
-    {
-        try
-        {
-            var message = await _botClient.SendTextMessageAsync(chatId,
-                text: messageText,
-                parseMode: ParseMode.Html);
-        }
-        catch (Exception)
-        {
-
         }
     }
 }
