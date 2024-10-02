@@ -75,7 +75,7 @@ public class OutageScheduleStorage
 
     public int RemoveEmptySchedules()
     {
-        var keysEmptySchedules = NotificationList.Where(x => x.Value.ChatIds.Any())
+        var keysEmptySchedules = NotificationList.Where(x => !x.Value.ChatIds.Any())
             .Select(x => x.Key)
             .ToList();
 
