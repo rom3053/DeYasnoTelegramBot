@@ -1,7 +1,10 @@
-﻿using DeYasnoTelegramBot.Infrastructure.Configurations;
-using MassTransit;
+﻿using DeYasnoTelegramBot.Background;
+using DeYasnoTelegramBot.Infrastructure.Configurations;
+using DeYasnoTelegramBot.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.PostgreSQL;
 using Serilog.Sinks.PostgreSQL.ColumnWriters;
@@ -14,6 +17,11 @@ public static class ConfigureLogging
     {
         var config = GetDeYasnoConfig(builder.Configuration);
 
+        builder.Services.AddDbContext<LoggerDbContext>(options =>
+            options.UseNpgsql(config.ConnectionStrings.LoggingConnection));
+
+        builder.Services.AddHostedService<LoggerCleanerJob>();
+
         builder.UseSerilog(config);
 
         return builder.Services;
@@ -25,7 +33,7 @@ public static class ConfigureLogging
 
         IDictionary<string, ColumnWriterBase> columnWriters = new Dictionary<string, ColumnWriterBase>
         {
-            { "id", new SinglePropertyColumnWriter("id", PropertyWriteMethod.ToString, NpgsqlDbType.Text) },
+            { "id", new SinglePropertyColumnWriter("id", PropertyWriteMethod.Raw, NpgsqlDbType.Text) },
             { "message", new RenderedMessageColumnWriter(NpgsqlDbType.Text) },
             { "level", new LevelColumnWriter(true, NpgsqlDbType.Varchar) },
             { "raise_date", new TimestampColumnWriter(NpgsqlDbType.TimestampTz) },
@@ -34,14 +42,14 @@ public static class ConfigureLogging
             { "props_test", new PropertiesColumnWriter(NpgsqlDbType.Jsonb) },
         };
 
-        builder.Host.UseSerilog((context, configuration) => configuration
+        builder.Host.UseSerilog((context, services, configuration) => configuration
             .MinimumLevel.Is(minimumLevel)
             .MinimumLevel.Override("Microsoft", GetLogEventLevel(config.Logging.Microsoft))
             .MinimumLevel.Override("System", GetLogEventLevel(config.Logging.System))
             .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", GetLogEventLevel(config.Logging.MicrosoftAspNetCoreAuthentication))
             .MinimumLevel.Override("Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler", GetLogEventLevel(config.Logging.MicrosoftAspNetCoreAuthenticationJwtBearerJwtBearerHandler))
+            .Enrich.With<IdEnricher>()
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("id", NewId.NextGuid())
             .WriteTo.Async(
                 x => x.PostgreSQL(
                     connectionString: config.ConnectionStrings.LoggingConnection,
@@ -50,6 +58,15 @@ public static class ConfigureLogging
                     tableName: "_logs",
                     needAutoCreateTable: true))
             .WriteTo.Console());
+    }
+
+    private class IdEnricher : ILogEventEnricher
+    {
+        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        {
+            var idProperty = new LogEventProperty("id", new ScalarValue(Ulid.NewUlid().ToString()));
+            logEvent.AddPropertyIfAbsent(idProperty);
+        }
     }
 
     private static DeYasnoConfig GetDeYasnoConfig(IConfiguration configuration)

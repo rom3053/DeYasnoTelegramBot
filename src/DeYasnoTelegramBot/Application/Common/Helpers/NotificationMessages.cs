@@ -48,5 +48,11 @@ public static class NotificationMessages
         {
             public const string CommandSuccessText = "Ваш графік оновлено в системі.";
         }
+
+        public static class ToggleNotificationCommand
+        {
+            public const string DisableText = "Оповіщіння за графіком вимкнуті.";
+            public const string EnableText = "Оповіщіння за графіком включені.";
+        }
     }
 }

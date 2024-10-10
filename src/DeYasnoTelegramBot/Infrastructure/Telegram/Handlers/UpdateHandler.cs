@@ -1,4 +1,5 @@
-﻿using DeYasnoTelegramBot.Application.BotCommands.GetOutageStatusCommand;
+﻿using DeYasnoTelegramBot.Application.BotCommands.DisableNotification;
+using DeYasnoTelegramBot.Application.BotCommands.GetOutageStatusCommand;
 using DeYasnoTelegramBot.Application.BotCommands.GetScheduleScreenshotCommand;
 using DeYasnoTelegramBot.Application.BotCommands.StartCommand;
 using DeYasnoTelegramBot.Application.BotCommands.UpdateOwnScheduleCommand;
@@ -85,6 +86,7 @@ public class UpdateHandler : IUpdateHandler
             BotCommands.GetScheduleScreenshot => _mediator.Send(new GetScheduleScreenshotCommand { ChatId = chatId }),
             BotCommands.UpdateOwnSchedule => _mediator.Send(new UpdateOwnScheduleCommand { ChatId = chatId }),
             BotCommands.OutageStatusNow => _mediator.Send(new GetOutageStatusCommand { ChatId = chatId }),
+            BotCommands.ToggleNotification => _mediator.Send(new ToggleNotificationCommand { ChatId = chatId }),
             _ when !string.IsNullOrWhiteSpace(userMessage) => _mediator.Send(new UserInputCommand { ChatId = chatId, UserInput = userMessage }),
             //BotCommands.HelpCommand => HandleErrorMessage(chatId),
             _ => Task.CompletedTask

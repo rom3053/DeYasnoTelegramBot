@@ -4,8 +4,6 @@ using DeYasnoTelegramBot.Infrastructure.Persistence;
 using DeYasnoTelegramBot.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
 
 namespace DeYasnoTelegramBot.Application.BotCommands.GetOutageStatusCommand;
 

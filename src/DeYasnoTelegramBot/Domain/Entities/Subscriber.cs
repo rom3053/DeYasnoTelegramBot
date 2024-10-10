@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using DeYasnoTelegramBot.Application.Common.Dtos.YasnoWebScrapper;
 using DeYasnoTelegramBot.Domain.Enums;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace DeYasnoTelegramBot.Domain.Entities;
 
@@ -22,6 +23,8 @@ public sealed class Subscriber
     public string? UserStreet { get; set; }
 
     public string? UserHouseNumber { get; set; }
+
+    public bool IsDisableNotification { get; set; }
 
     public List<OutageScheduleDayDto>? OutageSchedules { get; set; }
 }

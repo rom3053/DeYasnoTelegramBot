@@ -1,4 +1,5 @@
 ﻿using DeYasnoTelegramBot.Infrastructure.Configurations;
+using DeYasnoTelegramBot.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeYasnoTelegramBot.Controllers;
@@ -11,7 +12,8 @@ public class VersionController : ControllerBase
     private readonly ILogger<VersionController> _logger;
 
     public VersionController(DeYasnoConfig deYasnoConfig,
-        ILogger<VersionController> logger)
+        ILogger<VersionController> logger,
+        LoggerDbContext loggerDbContext)
     {
         _deYasnoConfig = deYasnoConfig;
         _logger = logger;
@@ -21,6 +23,7 @@ public class VersionController : ControllerBase
     public async Task<IActionResult> Get()
     {
         _logger.LogInformation("RickRoll");
+
         return Redirect("https://dn720407.ca.archive.org/0/items/rick-roll/Rick%20Roll.mp4");
     }
 }

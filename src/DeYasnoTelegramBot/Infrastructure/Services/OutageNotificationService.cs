@@ -1,7 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using DeYasnoTelegramBot.Application.Common.Extensions;
 using DeYasnoTelegramBot.Application.Common.Helpers;
-using Telegram.Bot;
+using DeYasnoTelegramBot.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeYasnoTelegramBot.Infrastructure.Services;
 
@@ -13,46 +14,123 @@ public class OutageNotificationService
     private readonly OutageScheduleStorage _outageScheduleStorage;
     private readonly ILogger<OutageNotificationService> _logger;
     private readonly TelegramBotClientSender _botClientSender;
+    private readonly ApplicationDbContext _context;
 
     public OutageNotificationService(
         OutageScheduleStorage outageScheduleStorage,
         ILogger<OutageNotificationService> logger,
-        TelegramBotClientSender botClientSender)
-
+        TelegramBotClientSender botClientSender,
+        ApplicationDbContext context)
     {
         _outageScheduleStorage = outageScheduleStorage;
         _logger = logger;
         _botClientSender = botClientSender;
+        _context = context;
     }
 
-    public async Task NotifyIn5minAsync(HashSet<long> outageNotifed, HashSet<long> greyZoneNotifed, HashSet<long> powerOnNotifed)
+    public async Task NotifyIn5minAsync(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
-        GetUkraineNotificationTimes(TimeSpan.FromMinutes(5), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
+        GetUkraineNotificationTimes(TimeSpan.FromMinutes(5), out var notificationTime,
+            out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
-        await NotifyPowerOffV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, outageNotifed, greyZoneNotifed, NotificationMessages.Message_About_5min_PowerOff);
-        await NotifyPossiblePowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, greyZoneNotifed, powerOnNotifed, NotificationMessages.Message_About_5min_PossiblePowerOn);
-        await NotifyPowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, powerOnNotifed, outageNotifed, NotificationMessages.Message_About_5min_PowerOn);
+        var disableSubs = await _context.Subscribers.Where(x => x.IsDisableNotification)
+            .Select(x => x.ChatId)
+            .ToListAsync();
+        var disableChatIds = disableSubs.ToHashSet();
+
+        var dto = new NotifyPowerDto(
+            notificationList, notificationTime,
+            dateTimeNow, notificationHour,
+            prevNotificationHour,
+            _outageNotifed,
+            _greyZoneNotifed,
+            NotificationMessages.Message_About_5min_PowerOff,
+            disableChatIds);
+
+        await NotifyPowerOffV2Async(dto);
+        await NotifyPossiblePowerOnV2Async(dto with
+        {
+            currentNotificationFlags = _greyZoneNotifed,
+            nextNotificationFlags = _powerOnNotifed,
+            notificationMessage = NotificationMessages.Message_About_5min_PossiblePowerOn
+        });
+        await NotifyPowerOnV2Async(dto with
+        {
+            currentNotificationFlags = _powerOnNotifed,
+            nextNotificationFlags = _outageNotifed,
+            notificationMessage = NotificationMessages.Message_About_5min_PowerOn
+        });
     }
 
     public async Task NotifyIn15minAsync(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
-        GetUkraineNotificationTimes(TimeSpan.FromMinutes(15), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
+        GetUkraineNotificationTimes(TimeSpan.FromMinutes(15), out var notificationTime,
+            out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
-        await NotifyPowerOffV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _outageNotifed, _greyZoneNotifed, NotificationMessages.Message_About_15min_PowerOff);
-        await NotifyPossiblePowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _greyZoneNotifed, _powerOnNotifed, NotificationMessages.Message_About_15min_PossiblePowerOn);
-        await NotifyPowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _powerOnNotifed, _outageNotifed, NotificationMessages.Message_About_15min_PowerOn);
+        var disableSubs = await _context.Subscribers.Where(x => x.IsDisableNotification)
+            .Select(x => x.ChatId)
+            .ToListAsync();
+        var disableChatIds = disableSubs.ToHashSet();
+
+        var dto = new NotifyPowerDto(
+            notificationList, notificationTime,
+            dateTimeNow, notificationHour,
+            prevNotificationHour,
+            _outageNotifed,
+            _greyZoneNotifed,
+            NotificationMessages.Message_About_15min_PowerOff,
+            disableChatIds);
+
+        await NotifyPowerOffV2Async(dto);
+        await NotifyPossiblePowerOnV2Async(dto with
+        {
+            currentNotificationFlags = _greyZoneNotifed,
+            nextNotificationFlags = _powerOnNotifed,
+            notificationMessage = NotificationMessages.Message_About_15min_PossiblePowerOn
+        });
+        await NotifyPowerOnV2Async(dto with
+        {
+            currentNotificationFlags = _powerOnNotifed,
+            nextNotificationFlags = _outageNotifed,
+            notificationMessage = NotificationMessages.Message_About_15min_PowerOn
+        });
     }
 
     public async Task NotifyIn30minAsync(HashSet<long> _outageNotifed, HashSet<long> _greyZoneNotifed, HashSet<long> _powerOnNotifed)
     {
         var notificationList = _outageScheduleStorage.NotificationList;
-        GetUkraineNotificationTimes(TimeSpan.FromMinutes(30), out var notificationTime, out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
+        GetUkraineNotificationTimes(TimeSpan.FromMinutes(30), out var notificationTime, 
+            out var dateTimeNow, out var notificationHour, out var prevNotificationHour);
 
-        await NotifyPowerOffV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _outageNotifed, _greyZoneNotifed, NotificationMessages.Message_About_30min_PowerOff);
-        await NotifyPossiblePowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _greyZoneNotifed, _powerOnNotifed, NotificationMessages.Message_About_30min_PossiblePowerOn);
-        await NotifyPowerOnV2Async(notificationList, notificationTime, dateTimeNow, notificationHour, prevNotificationHour, _powerOnNotifed, _outageNotifed, NotificationMessages.Message_About_30min_PowerOn);
+        var disableSubs = await _context.Subscribers.Where(x => x.IsDisableNotification)
+            .Select(x => x.ChatId)
+            .ToListAsync();
+        var disableChatIds = disableSubs.ToHashSet();
+
+        var dto = new NotifyPowerDto(
+            notificationList, notificationTime,
+            dateTimeNow, notificationHour,
+            prevNotificationHour,
+            _outageNotifed,
+            _greyZoneNotifed,
+            NotificationMessages.Message_About_30min_PowerOff,
+            disableChatIds);
+
+        await NotifyPowerOffV2Async(dto);
+        await NotifyPossiblePowerOnV2Async(dto with
+        {
+            currentNotificationFlags = _greyZoneNotifed,
+            nextNotificationFlags = _powerOnNotifed,
+            notificationMessage = NotificationMessages.Message_About_30min_PossiblePowerOn
+        });
+        await NotifyPowerOnV2Async(dto with
+        {
+            currentNotificationFlags = _powerOnNotifed,
+            nextNotificationFlags = _outageNotifed,
+            notificationMessage = NotificationMessages.Message_About_30min_PowerOn
+        });
     }
 
     private static void GetUkraineNotificationTimes(TimeSpan inTimeMinutes, out DateTime ukraineNotificationTime, out DateTime ukraineDateTimeNow, out int notificationHour, out int prevNotificationHour)
@@ -64,8 +142,18 @@ public class OutageNotificationService
         prevNotificationHour = notificationHour - 1;
     }
 
-    private async Task NotifyPowerOffV2Async(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOffNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
+    private async Task NotifyPowerOffV2Async(NotifyPowerDto dto)
     {
+        var sessions = dto.sessions;
+        var notificationTime = dto.notificationTime;
+        var notificationHour = dto.notificationHour;
+        var prevHour = dto.prevHour;
+        var realTime = dto.realTime;
+        var disableChatIds = dto.disableChatIds;
+        var powerOffNotificationFlags = dto.currentNotificationFlags;
+        var notificationMessage = dto.notificationMessage;
+        var nextNotificationFlags = dto.nextNotificationFlags;
+
         var needNotify = sessions.Select(x => x.Value)
             .Select(a => new
             {
@@ -85,6 +173,8 @@ public class OutageNotificationService
             .SelectMany(rr => rr.ChatIds)
             .ToHashSet();
 
+        //remove already disable subs
+        needNotify.ExceptWith(disableChatIds);
         //remove already notified
         needNotify.ExceptWith(powerOffNotificationFlags);
         if (needNotify.Count != 0)
@@ -100,8 +190,18 @@ public class OutageNotificationService
         }
     }
 
-    private async Task NotifyPossiblePowerOnV2Async(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerPossibleOnNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
+    private async Task NotifyPossiblePowerOnV2Async(NotifyPowerDto dto)
     {
+        var sessions = dto.sessions;
+        var notificationTime = dto.notificationTime;
+        var notificationHour = dto.notificationHour;
+        var prevHour = dto.prevHour;
+        var realTime = dto.realTime;
+        var disableChatIds = dto.disableChatIds;
+        var powerPossibleOnNotificationFlags = dto.currentNotificationFlags;
+        var notificationMessage = dto.notificationMessage;
+        var nextNotificationFlags = dto.nextNotificationFlags;
+
         var needNotify = sessions.Select(x => x.Value)
             .Select(a => new
             {
@@ -121,6 +221,8 @@ public class OutageNotificationService
             .SelectMany(rr => rr.ChatIds)
             .ToHashSet();
 
+        //remove already disable subs
+        needNotify.ExceptWith(disableChatIds);
         //remove already notified
         needNotify.ExceptWith(powerPossibleOnNotificationFlags);
         if (needNotify.Count != 0)
@@ -136,8 +238,18 @@ public class OutageNotificationService
         }
     }
 
-    private async Task NotifyPowerOnV2Async(ConcurrentDictionary<string, CachedNotificationList> sessions, DateTime notificationTime, DateTime realTime, int notificationHour, int prevHour, HashSet<long> powerOnNotificationFlags, HashSet<long> nextNotificationFlags, string notificationMessage)
+    private async Task NotifyPowerOnV2Async(NotifyPowerDto dto)
     {
+        var sessions = dto.sessions;
+        var notificationTime = dto.notificationTime;
+        var notificationHour = dto.notificationHour;
+        var prevHour = dto.prevHour;
+        var realTime = dto.realTime;
+        var disableChatIds = dto.disableChatIds;
+        var powerOnNotificationFlags = dto.currentNotificationFlags;
+        var notificationMessage = dto.notificationMessage;
+        var nextNotificationFlags = dto.nextNotificationFlags;
+
         var needNotify = sessions.Select(x => x.Value)
             .Select(a => new
             {
@@ -157,6 +269,8 @@ public class OutageNotificationService
             .SelectMany(rr => rr.ChatIds)
             .ToHashSet();
 
+        //remove already disable subs
+        needNotify.ExceptWith(disableChatIds);
         //remove already notified
         needNotify.ExceptWith(powerOnNotificationFlags);
         if (needNotify.Count != 0)
@@ -170,5 +284,39 @@ public class OutageNotificationService
             //clean
             nextNotificationFlags.ExceptWith(needNotify);
         }
+    }
+
+    public record NotifyPowerDto
+    {
+        public NotifyPowerDto(ConcurrentDictionary<string, CachedNotificationList> sessions,
+            DateTime notificationTime,
+            DateTime realTime,
+            int notificationHour,
+            int prevHour,
+            HashSet<long> currentNotificationFlags,
+            HashSet<long> nextNotificationFlags,
+            string notificationMessage,
+            HashSet<long> disableChatIds)
+        {
+            this.sessions = sessions;
+            this.notificationTime = notificationTime;
+            this.realTime = realTime;
+            this.notificationHour = notificationHour;
+            this.prevHour = prevHour;
+            this.currentNotificationFlags = currentNotificationFlags;
+            this.nextNotificationFlags = nextNotificationFlags;
+            this.notificationMessage = notificationMessage;
+            this.disableChatIds = disableChatIds;
+        }
+
+        public ConcurrentDictionary<string, CachedNotificationList> sessions { get; set; }
+        public DateTime notificationTime { get; set; }
+        public DateTime realTime { get; set; }
+        public int notificationHour { get; set; }
+        public int prevHour { get; set; }
+        public HashSet<long> currentNotificationFlags { get; set; }
+        public HashSet<long> nextNotificationFlags { get; set; }
+        public string notificationMessage { get; set; }
+        public HashSet<long> disableChatIds { get; set; }
     }
 }

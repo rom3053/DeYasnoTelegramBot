@@ -21,7 +21,6 @@ try
     Log.Information("Starting the service");
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-    // Add services to the container.
     ConfigurationManager configuration = builder.Configuration;
 
     TelegramBotClient bot = new TelegramBotClient(configuration["TelegramBotKey"]);
@@ -30,8 +29,9 @@ try
     //ToDo: some validations
     //ToDo: maybe reuse browser session
     //ToDo: diasbale notification command
-    //ToDo:
+    //ToDo: own FeatureManagement
     builder.ConfigLogging();
+    
     //builder.Services
     //    .AddFeatureManagement(configuration.GetSection("DeYasno:FeatureFlags"));
     builder.Services.AddApplicationServices();
