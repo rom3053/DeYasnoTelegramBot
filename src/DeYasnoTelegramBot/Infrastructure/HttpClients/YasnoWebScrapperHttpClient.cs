@@ -83,6 +83,15 @@ public class YasnoWebScrapperHttpClient : BaseHttpClient
         return response;
     }
 
+    public async Task<SessionDto> AutomaticInputSteps(string sessionId, AutomaticInputRequest request)
+    {
+        var url = GetUrl(YasnoScrapperApiActions.AutomaticInput).Replace("{sessionId}", sessionId);
+
+        var response = await PostAsync<SessionDto>(url, request, "Automatic Input Steps");
+
+        return response;
+    }
+
     public async Task<List<OutageScheduleDayDto>> GetParsedTable(string sessionId)
     {
         var url = GetUrl(YasnoScrapperApiActions.GetParsedTable).Replace("{sessionId}", sessionId);

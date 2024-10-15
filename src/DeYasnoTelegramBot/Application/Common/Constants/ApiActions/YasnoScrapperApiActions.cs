@@ -28,6 +28,7 @@ public static class YasnoScrapperApiActions
     public const string Step_4_InputStreet = $"{OutageScheduleInputController}/{{sessionId}}/step-4-input-street";
     public const string Step_6_InputHouseNumber = $"{OutageScheduleInputController}/{{sessionId}}/step-6-input-house-number";
     public const string Step_3_5_7_SelectOption = $"{OutageScheduleInputController}/{{sessionId}}/step-3-5-7-select-option";
+    public const string AutomaticInput = $"{OutageScheduleInputController}/{{sessionId}}/automatic-input";
     #endregion
 
     #region OutageScheduleController

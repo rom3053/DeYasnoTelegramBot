@@ -148,24 +148,18 @@ public class OutageInputService
     public async Task<SessionDto> InitNewSessionAutoInput(string userRegion, string userCity, string userStreet, string userHouseNumber)
     {
         var session = await _yasnoWebScrapperHttpClient.InitSessionAsync();
-        await _yasnoWebScrapperHttpClient.InputRegion(session.SessionId, userRegion);
 
-        var options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputCity(session.SessionId, userCity);
-        var optionIndex = options.Where(x => x.Text.Contains(userCity)).Select(x => x.Index).FirstOrDefault(-1);
-        ValidateAutoInput(optionIndex);
-        var response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
+        var request = new AutomaticInputRequest
+        {
+            RegionName = userRegion,
+            CityName = userCity,
+            StreetName = userStreet,
+            HouseNumber = userHouseNumber
+        };
 
-        options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputStreet(session.SessionId, userStreet);
-        optionIndex = options.Where(x => x.Text.Contains(userStreet)).Select(x => x.Index).FirstOrDefault(-1);
-        ValidateAutoInput(optionIndex);
-        response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
+        var response = await _yasnoWebScrapperHttpClient.AutomaticInputSteps(session.SessionId, request);
 
-        options = await _yasnoWebScrapperHttpClient.GetOptionsAndInputHouseNumber(session.SessionId, userHouseNumber);
-        optionIndex = options.Where(x => x.Text.Contains(userHouseNumber)).Select(x => x.Index).FirstOrDefault(-1);
-        ValidateAutoInput(optionIndex);
-        response = await _yasnoWebScrapperHttpClient.SelectDropdownOption(session.SessionId, optionIndex.ToString());
-
-        return session;
+        return response;
     }
 
     private async Task SendMessage(long chatId, string text, string options = null)
@@ -183,13 +177,5 @@ public class OutageInputService
         }
 
         return htmlBuilder.ToString();
-    }
-
-    private static void ValidateAutoInput(int index)
-    {
-        if (index == -1)
-        {
-            throw new AutoInputException();
-        }
     }
 }
